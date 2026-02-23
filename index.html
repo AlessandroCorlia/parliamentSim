@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulatore Elezioni Parlamentari</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f5f5f5;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+      flex-direction: row;
+      overflow: hidden;
+    }
+
+    #menu {
+      background: #ffffff;
+      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+      width: 280px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+
+    h1 {
+      font-size: 18px;
+      color: #333;
+      margin-bottom: 15px;
+      text-align: center;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    input, select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+
+    button {
+      padding: 8px;
+      background: #2b7cff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #1a5fd1;
+    }
+
+    #legenda {
+      margin-top: 20px;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .partito-box {
+      display: flex;
+      align-items: center;
+      background: #f1f1f1;
+      border-radius: 6px;
+      padding: 5px 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .colore-box {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      margin-right: 8px;
+    }
+
+    #main {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    svg {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div id="menu">
+    <h1>Gestione Partiti</h1>
+    <form id="partitoForm">
+      <input type="text" id="nome" placeholder="Nome partito" required />
+      <input type="color" id="colore" value="#ff0000" />
+      <select id="ideologia" required>
+        <option value="">-- Ideologia --</option>
+        <option value="sinistra">Sinistra</option>
+        <option value="centro">Centro</option>
+        <option value="destra">Destra</option>
+      </select>
+      <input type="number" id="percentuale" placeholder="%" min="0" max="100" required />
+      <button type="submit">Aggiungi Partito</button>
+    </form>
+    <button id="resetPartiti" type="button" style="margin-top:10px; background:#ff4c4c;">Reset Partiti</button>
+
+    <div id="legenda"></div>
+    <div id="percentuale-riempimento" style="margin-top:10px; font-weight:bold; text-align:center;">
+  Riempimento parlamento: 0%
+</div>  
+  </div>
+  
+
+  <div id="main">
+    <svg id="parlamento" width="800" height="450"></svg>
+  </div>
+
+  <script>
+  // --- Carica partiti salvati dal localStorage ---
+  const partiti = JSON.parse(localStorage.getItem('partitiSalvati')) || [];
+
+  const form = document.getElementById('partitoForm');
+  const parlamento = document.getElementById('parlamento');
+  const legenda = document.getElementById('legenda');
+  const SEGGI_TOTALI = 400;
+
+  // Aggiorna subito la visualizzazione se ci sono partiti salvati
+  aggiornaLegenda();
+  disegnaParlamento();
+
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const nome = document.getElementById('nome').value;
+    const colore = document.getElementById('colore').value;
+    const percentuale = parseFloat(document.getElementById('percentuale').value);
+    const ideologia = document.getElementById('ideologia').value;
+
+    const sommaPercentuali = partiti.reduce((s, p) => s + p.percentuale, 0) + percentuale;
+    if (sommaPercentuali > 100) {
+      alert('La somma delle percentuali supera 100%!');
+      return;
+    }
+
+    partiti.push({ nome, colore, percentuale, ideologia });
+
+    // --- SALVA NEL LOCALSTORAGE ---
+    localStorage.setItem('partitiSalvati', JSON.stringify(partiti));
+
+    aggiornaLegenda();
+    disegnaParlamento();
+    form.reset();
+  });
+
+  function assegnaSeggi() {
+    const somma = partiti.reduce((s, p) => s + p.percentuale, 0);
+    if (somma === 0) return [];
+    return partiti.map(p => ({
+      ...p,
+      seggi: Math.round((p.percentuale / 100) * SEGGI_TOTALI)
+    }));
+  }
+
+  function disegnaParlamento() {
+    const dati = assegnaSeggi();
+    parlamento.innerHTML = '';
+
+    const cx = 400;
+    const cy = 400;
+    const raggio = 300;
+    const spessore = 40;
+
+    const totaleAssegnato = dati.reduce((s, p) => s + p.seggi, 0);
+    if (totaleAssegnato === 0) return;
+
+    const ordineIdeologico = { sinistra: 0, centro: 1, destra: 2 };
+    dati.sort((a, b) => ordineIdeologico[a.ideologia] - ordineIdeologico[b.ideologia]);
+
+    let startAngle = Math.PI; // inizio da 180° (sinistra)
+    dati.forEach(p => {
+      const angleSpan = Math.PI * (p.seggi / SEGGI_TOTALI);
+      for (let i = 0; i < p.seggi; i++) {
+        const frazione = i / p.seggi;
+        const angolo = startAngle + angleSpan * frazione;
+        for (let layer = 0; layer < 2; layer++) {
+          const offset = layer * (spessore / 2);
+          const x = cx + (raggio - offset) * Math.cos(angolo);
+          const y = cy + (raggio - offset) * Math.sin(angolo);
+          const cerchio = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          cerchio.setAttribute('cx', x);
+          cerchio.setAttribute('cy', y);
+          cerchio.setAttribute('r', 5);
+          cerchio.setAttribute('fill', p.colore);
+
+          // --- TOOLTIP ---
+          const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+          title.textContent = `${p.nome} - ${p.ideologia} - seggio ${i+1}`;
+          cerchio.appendChild(title);
+
+          parlamento.appendChild(cerchio);
+        }
+      }
+      startAngle += angleSpan;
+    });
+  }
+
+  function aggiornaLegenda() {
+  legenda.innerHTML = '';
+  const dati = assegnaSeggi();
+
+  dati.forEach((p, index) => {
+    const box = document.createElement('div');
+    box.className = 'partito-box';
+
+    const coloreBox = document.createElement('div');
+    coloreBox.className = 'colore-box';
+    coloreBox.style.backgroundColor = p.colore;
+
+    const testo = document.createElement('span');
+    testo.textContent = `${p.nome} (${p.ideologia}): ${p.percentuale}% - ${p.seggi} seggi`;
+
+    // --- Pulsante elimina singolo partito ---
+    const eliminaBtn = document.createElement('button');
+    eliminaBtn.textContent = '✖';
+    eliminaBtn.style.marginLeft = 'auto';
+    eliminaBtn.style.background = '#ff4c4c';
+    eliminaBtn.style.color = 'white';
+    eliminaBtn.style.border = 'none';
+    eliminaBtn.style.borderRadius = '3px';
+    eliminaBtn.style.cursor = 'pointer';
+    eliminaBtn.addEventListener('click', () => {
+      partiti.splice(index, 1); // rimuove il partito
+      localStorage.setItem('partitiSalvati', JSON.stringify(partiti)); // aggiorna storage
+      aggiornaLegenda();
+      disegnaParlamento();
+    });
+
+    box.appendChild(coloreBox);
+    box.appendChild(testo);
+    box.appendChild(eliminaBtn);
+    legenda.appendChild(box);
+  });
+
+  // Aggiorna percentuale riempimento
+  const totalePercentuale = dati.reduce((s, p) => s + p.percentuale, 0);
+  document.getElementById('percentuale-riempimento').textContent =
+    `Riempimento parlamento: ${totalePercentuale}%`;
+}
+
+document.getElementById('resetPartiti').addEventListener('click', () => {
+  if(confirm("Vuoi davvero resettare tutti i partiti?")) {
+    partiti.length = 0; // svuota array
+    localStorage.removeItem('partitiSalvati'); // cancella dal localStorage
+    aggiornaLegenda();
+    disegnaParlamento();
+  }
+});
+</script>
+</body>
+</html>

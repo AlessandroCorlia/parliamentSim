@@ -7,82 +7,168 @@
   <link rel="icon" type="image/x-icon" href="logo.png">
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f5f5f5;
+      font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+      background: #e9ecef;
       margin: 0;
       padding: 0;
       display: flex;
       height: 100vh;
       flex-direction: row;
       overflow: hidden;
+      color: #2c2f33;
     }
 
     #menu {
-      background: #ffffff;
-      box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-      width: 280px;
-      padding: 20px;
+      background: linear-gradient(180deg, #f4f5f7 0%, #e9eaee 100%);
+      box-shadow: 2px 0 12px rgba(0,0,0,0.1);
+      width: 300px;
+      padding: 25px;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
+      border-radius: 0 16px 16px 0;
     }
 
     h1 {
-      font-size: 18px;
-      color: #333;
-      margin-bottom: 15px;
+      font-size: 20px;
+      color: #2e4a7d;
+      margin-bottom: 20px;
       text-align: center;
+      font-weight: 700;
+      border-bottom: 2px solid #d1a654;
+      padding-bottom: 6px;
     }
 
     form {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      background: #ffffff;
+      padding: 18px;
+      border-radius: 10px;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    form:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 10px rgba(0,0,0,0.12);
+    }
+
+    #partitoForm.disabled {
+      pointer-events: none;
+      opacity: 0.4;
+      filter: grayscale(30%);
+      transition: opacity 0.5s ease, filter 0.5s ease;
+      position: relative;
+    }
+
+    #partitoForm.disabled::after {
+      content: "Parlamento completo ✅";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(255, 255, 255, 0.95);
+      color: #2e4a7d;
+      font-weight: 600;
+      font-size: 15px;
+      padding: 10px 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      text-align: center;
     }
 
     input, select {
-      padding: 8px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
+      padding: 10px;
+      border: 1px solid #ccd1d9;
+      border-radius: 8px;
       font-size: 14px;
+      background: #f9fafb;
+      transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: #2e4a7d;
+      box-shadow: 0 0 6px rgba(46,74,125,0.3);
     }
 
     button {
-      padding: 8px;
-      background: #2b7cff;
+      padding: 10px;
+      background: linear-gradient(90deg, #2e4a7d, #22365e);
       color: white;
+      font-weight: 500;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: background 0.3s;
+      transition: background 0.3s, transform 0.15s ease-in-out;
     }
 
     button:hover {
-      background: #1a5fd1;
+      background: linear-gradient(90deg, #3b5d9b, #1d2c4b);
+      transform: scale(1.02);
+    }
+
+    #resetPartiti {
+      margin-top: 15px;
+      background: linear-gradient(90deg, #b84343, #963535);
+    }
+
+    #resetPartiti:hover {
+      background: linear-gradient(90deg, #a93d3d, #7c2d2d);
+      transform: scale(1.02);
     }
 
     #legenda {
       margin-top: 20px;
       overflow-y: auto;
       flex-grow: 1;
+      padding-right: 5px;
+    }
+
+    #titoloParlamento {
+      position: absolute;
+      top: 30px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 600;
+      color: #2e4a7d;
+      letter-spacing: 0.6px;
+      text-shadow: 0 2px 3px rgba(0,0,0,0.1);
+      user-select: none;
     }
 
     .partito-box {
       display: flex;
       align-items: center;
-      background: #f1f1f1;
-      border-radius: 6px;
-      padding: 5px 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      background: #f4f6f8;
+      border-radius: 8px;
+      padding: 8px 10px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       font-size: 13px;
-      margin-bottom: 5px;
+      margin-bottom: 6px;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .partito-box:hover {
+      background: #e8ecf4;
+      transform: scale(1.01);
     }
 
     .colore-box {
-      width: 15px;
-      height: 15px;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      margin-right: 8px;
+      margin-right: 10px;
+      box-shadow: 0 0 3px rgba(0,0,0,0.2);
+    }
+
+    #percentuale-riempimento {
+      margin-top: 12px;
+      font-weight: bold;
+      text-align: center;
+      color: #2c2f33;
     }
 
     #main {
@@ -92,10 +178,33 @@
       align-items: center;
       justify-content: center;
       position: relative;
+      background: radial-gradient(circle at center, #f3f4f6, #dfe3e8);
     }
 
     svg {
       margin-top: 20px;
+    }
+
+    /* Form modifica a comparsa */
+    #modificaFormContainer {
+      display: none;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+      z-index: 100;
+    }
+
+    #modificaFormContainer h3 {
+      margin-top: 0;
+    }
+
+    #modificaFormContainer button {
+      margin: 0;
     }
   </style>
 </head>
@@ -112,160 +221,273 @@
         <option value="destra">Destra</option>
       </select>
       <input type="number" id="percentuale" placeholder="%" min="0" max="100" required />
-      <button type="submit">Aggiungi Partito</button>
+      <button type="submit">Eleggi Partito</button>
     </form>
-    <button id="resetPartiti" type="button" style="margin-top:10px; background:#ff4c4c;">Reset Partiti</button>
+    <button id="resetPartiti" type="button" style="margin-top:10px;">Sciogli Parlamento</button>
 
     <div id="legenda"></div>
-    <div id="percentuale-riempimento" style="margin-top:10px; font-weight:bold; text-align:center;">
-  Riempimento parlamento: 0%
-</div>  
+    <div id="percentuale-riempimento" style="margin-top:10px;">
+      Riempimento parlamento: 0%
+    </div>  
   </div>
-  
 
   <div id="main">
+    <h2 id="titoloParlamento">Il tuo Parlamento</h2>
     <svg id="parlamento" width="800" height="450"></svg>
   </div>
 
+  <!-- Form modifica partito -->
+  <div id="modificaFormContainer">
+    <h3>Modifica Partito</h3>
+    <form id="modificaForm">
+      <input type="text" id="modNome" placeholder="Nome partito" required />
+      <input type="color" id="modColore" value="#ff0000" />
+      <select id="modIdeologia" required>
+        <option value="">-- Ideologia --</option>
+        <option value="sinistra">Sinistra</option>
+        <option value="centro">Centro</option>
+        <option value="destra">Destra</option>
+      </select>
+      <input type="number" id="modPercentuale" placeholder="%" min="0" max="100" required />
+      <div style="margin-top:10px; display:flex; gap:10px; justify-content:flex-end;">
+        <button type="submit">Salva</button>
+        <button type="button" id="annullaModifica">Annulla</button>
+      </div>
+    </form>
+  </div>
+
   <script>
-  // --- Carica partiti salvati dal localStorage ---
-  const partiti = JSON.parse(localStorage.getItem('partitiSalvati')) || [];
-
-  const form = document.getElementById('partitoForm');
-  const parlamento = document.getElementById('parlamento');
-  const legenda = document.getElementById('legenda');
-  const SEGGI_TOTALI = 400;
-
-  // Aggiorna subito la visualizzazione se ci sono partiti salvati
-  aggiornaLegenda();
-  disegnaParlamento();
-
-  form.addEventListener('submit', e => {
-    e.preventDefault();
-    const nome = document.getElementById('nome').value;
-    const colore = document.getElementById('colore').value;
-    const percentuale = parseFloat(document.getElementById('percentuale').value);
-    const ideologia = document.getElementById('ideologia').value;
-
-    const sommaPercentuali = partiti.reduce((s, p) => s + p.percentuale, 0) + percentuale;
-    if (sommaPercentuali > 100) {
-      alert('La somma delle percentuali supera 100%!');
-      return;
-    }
-
-    partiti.push({ nome, colore, percentuale, ideologia });
-
-    // --- SALVA NEL LOCALSTORAGE ---
-    localStorage.setItem('partitiSalvati', JSON.stringify(partiti));
+    const partiti = JSON.parse(localStorage.getItem('partitiSalvati')) || [];
+    const form = document.getElementById('partitoForm');
+    const parlamento = document.getElementById('parlamento');
+    const legenda = document.getElementById('legenda');
+    const SEGGI_TOTALI = 400;
 
     aggiornaLegenda();
     disegnaParlamento();
-    form.reset();
-  });
 
-  function assegnaSeggi() {
-    const somma = partiti.reduce((s, p) => s + p.percentuale, 0);
-    if (somma === 0) return [];
-    return partiti.map(p => ({
-      ...p,
-      seggi: Math.round((p.percentuale / 100) * SEGGI_TOTALI)
-    }));
-  }
+    // Inserimento nuovo partito
+    form.addEventListener('submit', e => {
+      e.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const colore = document.getElementById('colore').value;
+      const percentuale = parseFloat(document.getElementById('percentuale').value);
+      const ideologia = document.getElementById('ideologia').value;
 
-  function disegnaParlamento() {
-    const dati = assegnaSeggi();
-    parlamento.innerHTML = '';
+      const sommaPercentuali = partiti.reduce((s, p) => s + p.percentuale, 0) + percentuale;
+      if (sommaPercentuali > 100) { alert('La somma delle percentuali supera 100%!'); return; }
 
-    const cx = 400;
-    const cy = 400;
-    const raggio = 300;
-    const spessore = 40;
+      partiti.push({ nome, colore, percentuale, ideologia });
+      localStorage.setItem('partitiSalvati', JSON.stringify(partiti));
 
-    const totaleAssegnato = dati.reduce((s, p) => s + p.seggi, 0);
-    if (totaleAssegnato === 0) return;
-
-    const ordineIdeologico = { sinistra: 0, centro: 1, destra: 2 };
-    dati.sort((a, b) => ordineIdeologico[a.ideologia] - ordineIdeologico[b.ideologia]);
-
-    let startAngle = Math.PI; // inizio da 180° (sinistra)
-    dati.forEach(p => {
-      const angleSpan = Math.PI * (p.seggi / SEGGI_TOTALI);
-      for (let i = 0; i < p.seggi; i++) {
-        const frazione = i / p.seggi;
-        const angolo = startAngle + angleSpan * frazione;
-        for (let layer = 0; layer < 2; layer++) {
-          const offset = layer * (spessore / 2);
-          const x = cx + (raggio - offset) * Math.cos(angolo);
-          const y = cy + (raggio - offset) * Math.sin(angolo);
-          const cerchio = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          cerchio.setAttribute('cx', x);
-          cerchio.setAttribute('cy', y);
-          cerchio.setAttribute('r', 5);
-          cerchio.setAttribute('fill', p.colore);
-
-          // --- TOOLTIP ---
-          const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-          title.textContent = `${p.nome} - ${p.ideologia} - seggio ${i+1}`;
-          cerchio.appendChild(title);
-
-          parlamento.appendChild(cerchio);
-        }
-      }
-      startAngle += angleSpan;
-    });
-  }
-
-  function aggiornaLegenda() {
-  legenda.innerHTML = '';
-  const dati = assegnaSeggi();
-
-  dati.forEach((p, index) => {
-    const box = document.createElement('div');
-    box.className = 'partito-box';
-
-    const coloreBox = document.createElement('div');
-    coloreBox.className = 'colore-box';
-    coloreBox.style.backgroundColor = p.colore;
-
-    const testo = document.createElement('span');
-    testo.textContent = `${p.nome} (${p.ideologia}): ${p.percentuale}% - ${p.seggi} seggi`;
-
-    // --- Pulsante elimina singolo partito ---
-    const eliminaBtn = document.createElement('button');
-    eliminaBtn.textContent = '✖';
-    eliminaBtn.style.marginLeft = 'auto';
-    eliminaBtn.style.background = '#ff4c4c';
-    eliminaBtn.style.color = 'white';
-    eliminaBtn.style.border = 'none';
-    eliminaBtn.style.borderRadius = '3px';
-    eliminaBtn.style.cursor = 'pointer';
-    eliminaBtn.addEventListener('click', () => {
-      partiti.splice(index, 1); // rimuove il partito
-      localStorage.setItem('partitiSalvati', JSON.stringify(partiti)); // aggiorna storage
       aggiornaLegenda();
       disegnaParlamento();
+      form.reset();
+    });
+
+    function assegnaSeggi() {
+      const somma = partiti.reduce((s,p)=> s+p.percentuale,0);
+      if(somma===0) return [];
+      return partiti.map(p => ({ ...p, seggi: Math.round((p.percentuale/100)*SEGGI_TOTALI) }));
+    }
+
+    function disegnaParlamento() {
+      const dati = assegnaSeggi();
+      parlamento.innerHTML = '';
+      const cx=400, cy=400, raggio=300, spessore=40;
+
+      const totaleAssegnato = dati.reduce((s,p)=>s+p.seggi,0);
+      if(totaleAssegnato===0) return;
+
+      const ordineIdeologico={sinistra:0, centro:1, destra:2};
+      dati.sort((a,b)=>ordineIdeologico[a.ideologia]-ordineIdeologico[b.ideologia]);
+
+      let startAngle=Math.PI;
+      dati.forEach(p=>{
+        const angleSpan=Math.PI*(p.seggi/SEGGI_TOTALI);
+        for(let i=0;i<p.seggi;i++){
+          const frazione=i/p.seggi;
+          const angolo=startAngle + angleSpan*frazione;
+          for(let layer=0;layer<2;layer++){
+            const offset=layer*(spessore/2);
+            const x=cx + (raggio-offset)*Math.cos(angolo);
+            const y=cy + (raggio-offset)*Math.sin(angolo);
+            const cerchio=document.createElementNS('http://www.w3.org/2000/svg','circle');
+            cerchio.setAttribute('cx',x);
+            cerchio.setAttribute('cy',y);
+            cerchio.setAttribute('r',5);
+            cerchio.setAttribute('fill',p.colore);
+            const title=document.createElementNS('http://www.w3.org/2000/svg','title');
+            title.textContent=`${p.nome} - ${p.ideologia} - seggio ${i+1}`;
+            cerchio.appendChild(title);
+            parlamento.appendChild(cerchio);
+          }
+        }
+        startAngle+=angleSpan;
+      });
+
+      // PRESIDENTE
+      if(dati.length>0){
+        const maxSeggi=Math.max(...dati.map(p=>p.seggi));
+        const topPartiti=dati.filter(p=>p.seggi===maxSeggi);
+        const presidente=topPartiti[Math.floor(Math.random()*topPartiti.length)];
+        const presidenteCircle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        presidenteCircle.setAttribute('cx',cx);
+        presidenteCircle.setAttribute('cy',cy+30);
+        presidenteCircle.setAttribute('r',10);
+        presidenteCircle.setAttribute('fill',presidente.colore);
+        presidenteCircle.setAttribute('stroke','#2c2f33');
+        presidenteCircle.setAttribute('stroke-width',2);
+        const titlePresidente=document.createElementNS('http://www.w3.org/2000/svg','title');
+        titlePresidente.textContent=`Presidente del Parlamento (${presidente.nome})`;
+        presidenteCircle.appendChild(titlePresidente);
+        parlamento.appendChild(presidenteCircle);
+      }
+      // --- PRESIDENTE DEL CONSIGLIO E MINISTRI ---
+if(dati.length > 0) {
+    // Top partito per Presidente del Consiglio
+    const maxSeggi = Math.max(...dati.map(p => p.seggi));
+    const topPartiti = dati.filter(p => p.seggi === maxSeggi);
+    const presidenteConsiglio = topPartiti[Math.floor(Math.random()*topPartiti.length)];
+
+    // --- Pallino Presidente del Consiglio ---
+    const pcmCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    pcmCircle.setAttribute('cx', cx);
+    pcmCircle.setAttribute('cy', cy - 30); // leggermente più in alto del Parlamento
+    pcmCircle.setAttribute('r', 10);
+    pcmCircle.setAttribute('fill', presidenteConsiglio.colore);
+    pcmCircle.setAttribute('stroke','#2c2f33');
+    pcmCircle.setAttribute('stroke-width',2);
+
+    const titlePCM = document.createElementNS('http://www.w3.org/2000/svg','title');
+    titlePCM.textContent = `Presidente del Consiglio (${presidenteConsiglio.nome})`;
+    pcmCircle.appendChild(titlePCM);
+    parlamento.appendChild(pcmCircle);
+
+    // --- Sei ministri ---
+    const topIdeologia = presidenteConsiglio.ideologia;
+    const topIdeologiaPartiti = dati.filter(p => p.ideologia === topIdeologia);
+    
+    const startX = cx - 4.5*15; // posizionamento a fila orizzontale centrata
+    for(let i=0; i<6; i++){
+        // prendi colore casuale tra partiti della stessa ideologia
+        const partitoMinistro = topIdeologiaPartiti[Math.floor(Math.random()*topIdeologiaPartiti.length)];
+
+        const ministroCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        ministroCircle.setAttribute('cx', startX + i*30);
+        ministroCircle.setAttribute('cy', cy - 60); // sopra il PCM
+        ministroCircle.setAttribute('r', 8);
+        ministroCircle.setAttribute('fill', partitoMinistro.colore);
+        ministroCircle.setAttribute('stroke','#2c2f33');
+        ministroCircle.setAttribute('stroke-width',1);
+
+        const titleMinistro = document.createElementNS('http://www.w3.org/2000/svg','title');
+        titleMinistro.textContent = `Ministro (${partitoMinistro.nome})`;
+        ministroCircle.appendChild(titleMinistro);
+
+        parlamento.appendChild(ministroCircle);
+    }
+}
+    }
+
+    function aggiornaLegenda() {
+  legenda.innerHTML='';
+  const dati = assegnaSeggi();
+
+  dati.forEach((p,index)=>{
+    const box=document.createElement('div');
+    box.className='partito-box';
+    const coloreBox=document.createElement('div');
+    coloreBox.className='colore-box';
+    coloreBox.style.backgroundColor=p.colore;
+    const testo=document.createElement('span');
+    testo.textContent=`${p.nome} (${p.ideologia}): ${p.percentuale}% - ${p.seggi} seggi`;
+
+    const eliminaBtn=document.createElement('button');
+    eliminaBtn.textContent='✖';
+    eliminaBtn.style.marginLeft='auto';
+    eliminaBtn.style.background='#ff4c4c';
+    eliminaBtn.style.color='white';
+    eliminaBtn.style.border='none';
+    eliminaBtn.style.borderRadius='3px';
+    eliminaBtn.style.cursor='pointer';
+    eliminaBtn.addEventListener('click',()=>{
+      partiti.splice(index,1);
+      localStorage.setItem('partitiSalvati',JSON.stringify(partiti));
+      aggiornaLegenda();
+      disegnaParlamento();
+    });
+
+    const modificaBtn=document.createElement('button');
+    modificaBtn.textContent='✎';
+    modificaBtn.style.marginLeft='5px';
+    modificaBtn.style.background='#4a90e2';
+    modificaBtn.style.color='white';
+    modificaBtn.style.border='none';
+    modificaBtn.style.borderRadius='3px';
+    modificaBtn.style.cursor='pointer';
+    modificaBtn.addEventListener('click',()=>{
+      document.getElementById('modNome').value=p.nome;
+      document.getElementById('modColore').value=p.colore;
+      document.getElementById('modIdeologia').value=p.ideologia;
+      document.getElementById('modPercentuale').value=p.percentuale;
+      document.getElementById('modificaFormContainer').style.display='block';
+      document.getElementById('modificaForm').dataset.index=index;
     });
 
     box.appendChild(coloreBox);
     box.appendChild(testo);
     box.appendChild(eliminaBtn);
+    box.appendChild(modificaBtn);
     legenda.appendChild(box);
   });
 
-  // Aggiorna percentuale riempimento
-  const totalePercentuale = dati.reduce((s, p) => s + p.percentuale, 0);
-  document.getElementById('percentuale-riempimento').textContent =
-    `Riempimento parlamento: ${totalePercentuale}%`;
+  const totalePercentuale = dati.reduce((s,p)=>s+p.percentuale,0);
+  document.getElementById('percentuale-riempimento').textContent=`Riempimento parlamento: ${totalePercentuale}%`;
+
+  const resetBtn=document.getElementById('resetPartiti');
+  if(totalePercentuale===100){
+    resetBtn.style.display='block';
+    form.classList.add('disabled'); // disabilita il form principale
+  } else {
+    resetBtn.style.display='none';
+    form.classList.remove('disabled'); // riabilita il form principale se <100%
+  }
 }
 
-document.getElementById('resetPartiti').addEventListener('click', () => {
-  if(confirm("Vuoi davvero resettare tutti i partiti?")) {
-    partiti.length = 0; // svuota array
-    localStorage.removeItem('partitiSalvati'); // cancella dal localStorage
-    aggiornaLegenda();
-    disegnaParlamento();
-  }
-});
-</script>
+    document.getElementById('resetPartiti').addEventListener('click',()=>{
+      if(confirm("Vuoi sciogliere il Parlamento?")){
+        partiti.length=0;
+        localStorage.removeItem('partitiSalvati');
+        aggiornaLegenda();
+        disegnaParlamento();
+      }
+    });
+
+    // Salvataggio modifica
+    document.getElementById('modificaForm').addEventListener('submit',e=>{
+      e.preventDefault();
+      const index=parseInt(e.target.dataset.index);
+      const nome=document.getElementById('modNome').value;
+      const colore=document.getElementById('modColore').value;
+      const ideologia=document.getElementById('modIdeologia').value;
+      const percentuale=parseFloat(document.getElementById('modPercentuale').value);
+
+      const totaleAltri=partiti.reduce((s,p,i)=>i!==index ? s+p.percentuale : s,0);
+      if(totaleAltri + percentuale>100){ alert("La somma delle percentuali supera 100%!"); return; }
+
+      partiti[index]={nome,colore,ideologia,percentuale};
+      localStorage.setItem('partitiSalvati',JSON.stringify(partiti));
+      document.getElementById('modificaFormContainer').style.display='none';
+      aggiornaLegenda();
+      disegnaParlamento();
+    });
+
+    // Annulla modifica
+    document.getElementById('annullaModifica').addEventListener('click',()=>{
+      document.getElementById('modificaFormContainer').style.display='none';
+    });
+
+  </script>
 </body>
 </html>

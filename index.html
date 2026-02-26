@@ -1,41 +1,162 @@
-<!--TODO: 
-  - Aggiornare il fatto delle coalizioni di governo (seggi uguali, includere il partito di centro)
-  - Grafica di opposizione e maggioranza
--->
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Create your own Parliament</title>
 <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+<title>Create your own Parliament</title>
 <style>
-  body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: radial-gradient(circle at center,#f1f2f6,#dfe3e8); margin:0; display:flex; height:100vh; color:#2c2f33; overflow:hidden; }
-  #menu { background: linear-gradient(180deg,#f7f8fa 0%,#e9eaee 100%); box-shadow:2px 0 10px rgba(0,0,0,0.1); width:300px; padding:25px; display:flex; flex-direction:column; border-radius:0 16px 16px 0; }
-  h1 { font-size:20px; text-align:center; margin-bottom:20px; color:#2e4a7d; border-bottom:2px solid #d1a654; padding-bottom:8px; }
-  #titoloParlamento {position: absolute; top: 30px; text-align: center; font-size: 26px; font-weight: 600; color: #2e4a7d; letter-spacing: 0.6px; text-shadow: 0 2px 3px rgba(0,0,0,0.1); user-select: text;}
-  form { display:flex; flex-direction:column; gap:10px; background:#fff; padding:15px; border-radius:10px; box-shadow:0 3px 6px rgba(0,0,0,0.08); }
-  input, select { padding:8px; border-radius:6px; border:1px solid #ccc; font-size:14px; }
-  button { padding:10px; background:linear-gradient(90deg,#2e4a7d,#1f345a); color:white; border:none; border-radius:6px; cursor:pointer; transition:0.3s; }
+  body {
+    font-family: 'Segoe UI', Roboto, Arial, sans-serif;
+    background: radial-gradient(circle at center,#f1f2f6,#dfe3e8);
+    margin:0;
+    display:flex;
+    height:100vh;
+    color:#2c2f33;
+    overflow:hidden;
+  }
+
+  #menu {
+    background: linear-gradient(180deg,#f7f8fa 0%,#e9eaee 100%);
+    box-shadow:2px 0 10px rgba(0,0,0,0.1);
+    width:300px;
+    padding:25px;
+    display:flex;
+    flex-direction:column;
+    border-radius:0 16px 16px 0;
+  }
+
+  h1 {
+    font-size:20px;
+    text-align:center;
+    margin-bottom:20px;
+    color:#2e4a7d;
+    border-bottom:2px solid #d1a654;
+    padding-bottom:8px;
+  }
+
+  #titoloParlamento {
+    position: absolute;
+    top: 30px;
+    width: 100%;
+    text-align: center;
+    font-size: 26px;
+    font-weight: 600;
+    color: #2e4a7d;
+    letter-spacing: 0.6px;
+    text-shadow: 0 2px 3px rgba(0,0,0,0.1);
+    user-select: text;
+  }
+
+  form {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+    background:#fff;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 3px 6px rgba(0,0,0,0.08);
+  }
+
+  input, select {
+    padding:8px;
+    border-radius:6px;
+    border:1px solid #ccc;
+    font-size:14px;
+  }
+
+  button {
+    padding:10px;
+    background:linear-gradient(90deg,#2e4a7d,#1f345a);
+    color:white;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
+    transition:0.3s;
+  }
+
   button:hover { transform:scale(1.02); background:linear-gradient(90deg,#3a5fa2,#2e4a7d); }
-  #legenda { margin-top:15px; overflow-y:auto; flex-grow:1; font-size:13px; }
-  .colore-box {width: 20px; height: 20px; border-radius: 50%;margin-right: 8px;}
+
+  #legenda {
+    margin-top:15px;
+    overflow-y:auto;
+    flex-grow:1;
+    font-size:13px;
+    max-height: 40vh;
+  }
+
+  .colore-box { width: 20px; height: 20px; border-radius: 50%; margin-right: 8px; }
   .partito-box { display:flex; align-items:center; justify-content:space-between; background:#f4f6f8; padding:6px 10px; border-radius:6px; margin-bottom:5px; }
   .partito-info { display:flex; align-items:center; gap:5px; }
   .partito-btns button { margin-left:4px; padding:4px 6px; font-size:11px; }
+
   #percentuale-riempimento { text-align:center; font-weight:bold; margin-top:10px; }
-  #main { flex-grow:1; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; }
-  svg { margin-top:20px; }
+
+  #main {
+    flex-grow:1;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+    overflow-x: auto;
+  }
+
+  svg {
+    margin-top:20px;
+    width: 100%;
+    height: auto;
+  }
+
   .voto-attivo { animation:votoFlash 0.3s ease-in-out; }
   @keyframes votoFlash { 0% { opacity:1; transform:scale(1); } 50% { opacity:0.3; transform:scale(1.4); } 100% { opacity:1; transform:scale(1); } }
-  #btnVota, #btnReset, #btnPdC { display:none; margin-top:20px; padding:14px 26px; font-size:16px; font-weight:600; color:#fff; border:2px solid #d1a654; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.2); cursor:pointer; transition:0.2s; letter-spacing:0.5px; }
+
+  #btnVota, #btnReset, #btnPdC {
+    display:none;
+    margin-top:20px;
+    padding:14px 26px;
+    font-size:16px;
+    font-weight:600;
+    color:#fff;
+    border:2px solid #d1a654;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.2);
+    cursor:pointer;
+    transition:0.2s;
+    letter-spacing:0.5px;
+    max-width: 90%;
+  }
+
   #btnVota:hover, #btnReset:hover, #btnPdC:hover { transform:scale(1.04); box-shadow:0 6px 12px rgba(0,0,0,0.25); }
+
   #btnPdC { background:linear-gradient(180deg,#2e4a7d 0%,#22365e 100%); }
   #btnReset { background:linear-gradient(180deg,#c22 0%,#911 100%); }
   #btnVota { background:linear-gradient(180deg,#2e4a7d 0%,#22365e 100%); }
-  #presidente, #pdcDiv { font-size:18px; margin-top:15px; color:#2e4a7d; font-weight:600; }
-  #editFormContainer { display:none; position:absolute; top:50px; left:50%; transform:translateX(-50%); background:white; padding:15px; border-radius:10px; box-shadow:0 4px 10px rgba(0,0,0,0.25); z-index:10; }
+
+  #presidente, #pdcDiv { font-size:18px; margin-top:15px; color:#2e4a7d; font-weight:600; text-align: center; }
+
+  #editFormContainer {
+    display:none;
+    position:absolute;
+    top:50px;
+    left:50%;
+    transform:translateX(-50%);
+    background:white;
+    padding:15px;
+    border-radius:10px;
+    box-shadow:0 4px 10px rgba(0,0,0,0.25);
+    z-index:10;
+  }
+
+  /* --- Media Queries per mobile --- */
+  @media (max-width: 768px) {
+    body { flex-direction: column; height: auto; overflow-y: auto; }
+    #menu { width: 80vw; padding:15px; border-radius:0 0 16px 16px; }
+    #main { width: 100%; padding: 10px 0; }
+    svg { width: 90vw; height: auto; }
+    #btnVota, #btnPdC, #btnReset { width: 90%; font-size: 14px; padding:12px; margin-top:10px; }
+    #presidente, #pdcDiv { font-size:16px; }
+  }
 </style>
 </head>
 <body>
@@ -59,7 +180,7 @@
 
 <div id="main">
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
-  <svg id="parlamento" width="800" height="450"></svg>
+  <svg id="parlamento" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet"></svg>
   <button id="btnVota">🗳️ Eleggi Presidente del Parlamento</button>
   <button id="btnPdC">👤 Nomina Presidente del Consiglio</button>
   <button id="btnReset">⚖️ Sciogli Parlamento</button>
@@ -247,6 +368,7 @@ async function simulaVotoPresidente(){
 }
 
 function aggiornaPresidente(){ if(presidente) presidenteDiv.innerHTML=`Presidente del Parlamento: <span style="color:${presidente.colore};font-weight:bold">${presidente.nome}</span>`; else presidenteDiv.textContent=''; }
+
 
 function nominaPdC() {
   if (!presidente) return; // sicurezza

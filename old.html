@@ -111,7 +111,7 @@
   .voto-attivo { animation:votoFlash 0.3s ease-in-out; }
   @keyframes votoFlash { 0% { opacity:1; transform:scale(1); } 50% { opacity:0.3; transform:scale(1.4); } 100% { opacity:1; transform:scale(1); } }
 
-  #btnVota, #btnReset, #btnPdC {
+  #btnVota, #btnReset, #btnPdC, #btnCoalizione {
     display:none;
     margin-top:20px;
     padding:14px 26px;
@@ -127,15 +127,15 @@
     max-width: 90%;
   }
 
-  #btnVota:hover, #btnReset:hover, #btnPdC:hover { transform:scale(1.04); box-shadow:0 6px 12px rgba(0,0,0,0.25); }
+  #btnVota:hover, #btnReset:hover, #btnPdC:hover, #btnCoalizione:hover { transform:scale(1.04); box-shadow:0 6px 12px rgba(0,0,0,0.25); }
 
-  #btnPdC { background:linear-gradient(180deg,#2e4a7d 0%,#22365e 100%); }
+  #btnPdC, #btnCoalizione { background:linear-gradient(180deg,#2e4a7d 0%,#22365e 100%); }
   #btnReset { background:linear-gradient(180deg,#c22 0%,#911 100%); }
   #btnVota { background:linear-gradient(180deg,#2e4a7d 0%,#22365e 100%); }
 
   #presidente, #pdcDiv { font-size:18px; margin-top:15px; color:#2e4a7d; font-weight:600; text-align: center; }
 
-  #editFormContainer {
+  #editFormContainer, #coalizioneContainer {
     display:none;
     position:absolute;
     top:50px;
@@ -147,6 +147,84 @@
     box-shadow:0 4px 10px rgba(0,0,0,0.25);
     z-index:10;
   }
+  #coalizioneContainer {
+  display: none;
+  position: absolute;
+  top: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #ffffff;
+  border: 2px solid #2e4a7d;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+  width: 320px;
+  padding: 20px;
+  font-family: 'Segoe UI', sans-serif;
+  z-index: 20;
+}
+
+#coalizioneContainer h3 {
+  text-align: center;
+  color: #2e4a7d;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #d1a654;
+  padding-bottom: 6px;
+}
+
+#coalizioneForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.partito-coalizione {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #f8f9fc;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+.partito-coalizione label {
+  flex-grow: 1;
+  margin-left: 8px;
+  color: #2e4a7d;
+  font-weight: 500;
+}
+
+#coalTot {
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 15px;
+  border-top: 1px solid #ddd;
+  padding-top: 8px;
+}
+
+#confermaCoalizione, #annullaCoalizione {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: 0.2s;
+  color: #fff;
+}
+
+#confermaCoalizione {
+  background: linear-gradient(90deg, #2e4a7d, #1f345a);
+}
+
+#annullaCoalizione {
+  background: linear-gradient(90deg, #911, #c22);
+}
+
+#confermaCoalizione:hover, #annullaCoalizione:hover {
+  transform: scale(1.03);
+}
 
   /* --- Media Queries per mobile --- */
   @media (max-width: 768px) {
@@ -154,7 +232,7 @@
     #menu { width: 80vw; padding:15px; border-radius:0 0 16px 16px; }
     #main { width: 100%; padding: 10px 0; }
     svg { width: 90vw; height: auto; }
-    #btnVota, #btnPdC, #btnReset { width: 90%; font-size: 14px; padding:12px; margin-top:10px; }
+    #btnVota, #btnPdC, #btnReset, #btnCoalizione { width: 90%; font-size: 14px; padding:12px; margin-top:10px; }
     #presidente, #pdcDiv { font-size:16px; }
   }
 </style>
@@ -182,12 +260,14 @@
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
   <svg id="parlamento" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet"></svg>
   <button id="btnVota">🗳️ Eleggi Presidente del Parlamento</button>
+  <button id="btnCoalizione">🤝 Crea Coalizione</button>
   <button id="btnPdC">👤 Nomina Presidente del Consiglio</button>
   <button id="btnReset">⚖️ Sciogli Parlamento</button>
   <div id="presidente"></div>
   <div id="pdcDiv"></div>
 </div>
 
+<!-- Form Modifica Partito -->
 <div id="editFormContainer">
   <h3>Modifica Partito</h3>
   <form id="editForm">
@@ -204,12 +284,22 @@
   </form>
 </div>
 
+<!-- Form Creazione Coalizione -->
+<div id="coalizioneContainer">
+  <h3>Forma Coalizione</h3>
+  <form id="coalizioneForm"></form>
+  <div id="coalTot" style="margin-top:8px;font-weight:bold"></div>
+  <button id="confermaCoalizione">✅ Conferma Coalizione</button>
+  <button id="annullaCoalizione" style="margin-left:8px;">✖ Annulla</button>
+</div>
+
 <script>
 const SEGGI_TOTALI = 400;
 const RIGHE = 5;
 let partiti = JSON.parse(localStorage.getItem('partitiSalvati')) || [];
 let presidente = JSON.parse(localStorage.getItem('presidenteSalvato')) || null;
 let presidenteConsiglio = JSON.parse(localStorage.getItem('presidenteConsiglio')) || null;
+let coalizioneMaggioranza = JSON.parse(localStorage.getItem('coalizioneMaggioranza')) || [];
 let editingIndex = null;
 
 const form = document.getElementById('partitoForm');
@@ -218,9 +308,15 @@ const legenda = document.getElementById('legenda');
 const btnVota = document.getElementById('btnVota');
 const btnReset = document.getElementById('btnReset');
 const btnPdC = document.getElementById('btnPdC');
+const btnCoalizione = document.getElementById('btnCoalizione');
 const presidenteDiv = document.getElementById('presidente');
 const pdcDiv = document.getElementById('pdcDiv');
 const percentualeDiv = document.getElementById('percentuale-riempimento');
+const coalizioneContainer = document.getElementById('coalizioneContainer');
+const coalizioneForm = document.getElementById('coalizioneForm');
+const coalTot = document.getElementById('coalTot');
+const confermaCoalizione = document.getElementById('confermaCoalizione');
+const annullaCoalizione = document.getElementById('annullaCoalizione');
 
 const editFormContainer = document.getElementById('editFormContainer');
 const editForm = document.getElementById('editForm');
@@ -237,7 +333,7 @@ aggiornaPdC();
 
 form.addEventListener('submit', e=>{
   e.preventDefault();
-  const nome = document.getElementById('nome').value;
+  const nome = document.getElementById('nome').value.trim();
   const colore = document.getElementById('colore').value;
   const ideologia = document.getElementById('ideologia').value;
   const percentuale = parseFloat(document.getElementById('percentuale').value);
@@ -250,10 +346,20 @@ form.addEventListener('submit', e=>{
 
 function salvaPartiti(){
   localStorage.setItem('partitiSalvati', JSON.stringify(partiti));
+  // aggiorno le referenze di presidente/pdc/coalizione se necessario:
+  // - se il partito del presidente è stato rimosso, rimuovo il presidente
+  if (presidente && !partiti.find(p => p.nome === presidente.nome)) presidente = null;
+  // - se PdC è di partito rimosso -> azzera
+  if (presidenteConsiglio && !partiti.find(p => p.nome === presidenteConsiglio.nome)) presidenteConsiglio = null;
+  // - aggiorna i colori/nome nella coalizione se un partito è stato rinominato/aggiornato
+  if (coalizioneMaggioranza.length) {
+    coalizioneMaggioranza = coalizioneMaggioranza
+      .map(c => { const found = partiti.find(p => p.nome === c.nome); return found ? {...found} : null; })
+      .filter(Boolean);
+  }
   localStorage.setItem('presidenteSalvato', JSON.stringify(presidente));
   localStorage.setItem('presidenteConsiglio', JSON.stringify(presidenteConsiglio));
-  if(!presidente || partiti.length<SEGGI_TOTALI) presidente=null;
-  if(!presidenteConsiglio) presidenteConsiglio=null;
+  localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
   aggiornaLegenda();
   disegnaParlamento();
   aggiornaPresidente();
@@ -274,14 +380,30 @@ function aggiornaLegenda(){
     colore.className='colore-box';
     colore.style.background=p.colore;
     const testo=document.createElement('span');
-    testo.textContent=`${p.nome} (${p.percentuale}%) - ${p.ideologia} - ${p.seggi} seggi`;
+    // se il partito è nella coalizione, aggiungo (Maggioranza) per chiarezza
+    const inMaj = coalizioneMaggioranza.find(c=>c.nome===p.nome);
+    testo.textContent=`${p.nome} (${p.percentuale}%) - ${p.ideologia} - ${p.seggi} seggi${inMaj ? ' • maggioranza' : ''}`;
     info.appendChild(colore); info.appendChild(testo);
 
     const btns=document.createElement('div'); btns.className='partito-btns';
     const btnDel=document.createElement('button'); btnDel.textContent='❌';
-    btnDel.onclick=()=>{ partiti.splice(i,1); presidente=null; presidenteConsiglio=null; salvaPartiti(); };
+    btnDel.onclick = () => { 
+      partiti.splice(i, 1);
+      // ogni volta che un partito viene rimosso, si azzera tutto
+      presidente = null;
+      presidenteConsiglio = null;
+      coalizioneMaggioranza = [];
+      salvaPartiti();
+    };
     const btnEdit=document.createElement('button'); btnEdit.textContent='✏️';
-    btnEdit.onclick=()=>{ editingIndex=i; editNome.value=p.nome; editColore.value=p.colore; editIdeologia.value=p.ideologia; editPercentuale.value=p.percentuale; editFormContainer.style.display='block'; };
+    btnEdit.onclick=()=>{
+      editingIndex=i; 
+      editNome.value=p.nome; 
+      editColore.value=p.colore; 
+      editIdeologia.value=p.ideologia; 
+      editPercentuale.value=p.percentuale; 
+      editFormContainer.style.display='block'; 
+    };
     btns.appendChild(btnEdit); btns.appendChild(btnDel);
 
     box.appendChild(info); box.appendChild(btns);
@@ -291,8 +413,15 @@ function aggiornaLegenda(){
   const totPerc = partiti.reduce((s,p)=>s+p.percentuale,0);
   percentualeDiv.textContent=`Riempimento parlamento: ${totPerc}%`;
 
-  if(totPerc===100 && !presidente){ btnVota.style.display='block'; btnReset.style.display='block'; form.querySelectorAll('input,select,button').forEach(el=>el.disabled=true);}
-  else{ btnVota.style.display='none'; if(totPerc===100) btnReset.style.display='block'; else btnReset.style.display='none'; form.querySelectorAll('input,select,button').forEach(el=>el.disabled=false);}
+  // pulsanti: logica
+  // btnVota compare quando parlamento pieno e non è ancora stato eletto il presidente
+  if(totPerc===100 && !presidente){ btnVota.style.display='block'; } else { btnVota.style.display='none'; }
+  // btnCoalizione compare solo dopo elezione presidente e prima creazione coalizione
+  if (presidente && coalizioneMaggioranza.length===0) { btnCoalizione.style.display='block'; } else { btnCoalizione.style.display='none'; }
+  // btnPdC compare solo se coalizione creata e PdC non ancora nominato
+  if (coalizioneMaggioranza.length>0 && !presidenteConsiglio) { btnPdC.style.display='block'; } else { btnPdC.style.display='none'; }
+  // reset button visibile quando parlamento pieno
+  if(totPerc===100) btnReset.style.display='block'; else btnReset.style.display='none';
 }
 
 function disegnaParlamento(){
@@ -305,13 +434,20 @@ function disegnaParlamento(){
     const angleSpan=Math.PI*(p.seggi/SEGGI_TOTALI);
     for(let row=0;row<RIGHE;row++){
       const raggio=raggioMax-row*step;
-      const seggiPerRiga=Math.round(p.seggi/RIGHE);
+      const seggiPerRiga = Math.max(1, Math.round(p.seggi/RIGHE));
       for(let i=0;i<seggiPerRiga;i++){
-        const frazione=i/seggiPerRiga;
-        const angolo=startAngle+angleSpan*frazione;
-        const x=cx+raggio*Math.cos(angolo); const y=cy+raggio*Math.sin(angolo);
-        const cerchio=document.createElementNS('http://www.w3.org/2000/svg','circle');
+        const frazione = (seggiPerRiga===0)?0:(i/seggiPerRiga);
+        const angolo = startAngle + angleSpan*frazione;
+        const x = cx + raggio*Math.cos(angolo); 
+        const y = cy + raggio*Math.sin(angolo);
+        const cerchio = document.createElementNS('http://www.w3.org/2000/svg','circle');
         cerchio.setAttribute('cx',x); cerchio.setAttribute('cy',y); cerchio.setAttribute('r',5); cerchio.setAttribute('fill',p.colore);
+        // aggiungo attributi per tooltip (title)
+        cerchio.setAttribute('data-partito', p.nome);
+        cerchio.setAttribute('data-seggio', currentSeggi+1);
+        const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+        title.textContent = `Seggio ${currentSeggi+1} — ${p.nome}`;
+        cerchio.appendChild(title);
         parlamento.appendChild(cerchio);
         currentSeggi++; if(currentSeggi>=p.seggi) break;
       }
@@ -322,33 +458,47 @@ function disegnaParlamento(){
     const presCircle=document.createElementNS('http://www.w3.org/2000/svg','circle');
     presCircle.setAttribute('cx',400); presCircle.setAttribute('cy',430); presCircle.setAttribute('r',12);
     presCircle.setAttribute('fill',presidente.colore); presCircle.setAttribute('stroke','#333'); presCircle.setAttribute('stroke-width','2');
+    const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+    title.textContent = `Presidente del Parlamento: ${presidente.nome}`;
+    presCircle.appendChild(title);
     parlamento.appendChild(presCircle);
   }
 
   if(presidenteConsiglio){
-    const pdcc=presidenteConsiglio;
-    const pdcCircle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    const pdcc = presidenteConsiglio;
+    const pdcCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
     pdcCircle.setAttribute('cx',400); pdcCircle.setAttribute('cy',390); pdcCircle.setAttribute('r',12);
     pdcCircle.setAttribute('fill',pdcc.colore); pdcCircle.setAttribute('stroke','#333'); pdcCircle.setAttribute('stroke-width','2');
+    const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+    title.textContent = `Presidente del Consiglio: ${pdcc.nome}`;
+    pdcCircle.appendChild(title);
     parlamento.appendChild(pdcCircle);
 
     pdcc.ministri.forEach((m,i)=>{
-      const dx=(i<3?-1:1)*(i%3+1)*25;
-      const cerchio=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      const dx = (i<3?-1:1)*(i%3+1)*25;
+      const cerchio = document.createElementNS('http://www.w3.org/2000/svg','circle');
       cerchio.setAttribute('cx',400+dx); cerchio.setAttribute('cy',360); cerchio.setAttribute('r',8);
       cerchio.setAttribute('fill',m.colore); cerchio.setAttribute('stroke','#333'); cerchio.setAttribute('stroke-width','1');
+      const titleM = document.createElementNS('http://www.w3.org/2000/svg','title');
+      // assegno ruoli ministeriali in ordine
+      const ruoli = ['Interno','Economia','Difesa','Esteri','Giustizia','Salute'];
+      titleM.textContent = `${ruoli[i]}: ${m.nome}`;
+      cerchio.appendChild(titleM);
       parlamento.appendChild(cerchio);
     });
   }
 }
 
 btnVota.addEventListener('click', simulaVotoPresidente);
+btnCoalizione.addEventListener('click', mostraCoalizione);
 btnPdC.addEventListener('click', nominaPdC);
-btnReset.addEventListener('click', ()=>{ partiti=[]; presidente=null; presidenteConsiglio=null; salvaPartiti(); });
+btnReset.addEventListener('click', ()=>{ partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; salvaPartiti(); });
 
 function scegliPresidente(){
   const dati=assegnaSeggi();
-  let rand=Math.random()*dati.reduce((s,p)=>s+p.seggi,0);
+  const total = dati.reduce((s,p)=>s+p.seggi,0);
+  if(total===0) return null;
+  let rand=Math.random()*total;
   for(const p of dati){ if(rand<p.seggi) return p; rand-=p.seggi; }
   return dati[dati.length-1];
 }
@@ -362,60 +512,199 @@ async function simulaVotoPresidente(){
     await new Promise(r=>setTimeout(r,25));
     subset.forEach(c=>c.classList.remove('voto-attivo'));
   }
-  presidente=scegliPresidente();
+  const scelto = scegliPresidente();
+  if(!scelto){ alert("Errore: impossibile scegliere presidente (seggi=0)."); return; }
+  presidente = { nome: scelto.nome, colore: scelto.colore };
   localStorage.setItem('presidenteSalvato',JSON.stringify(presidente));
-  aggiornaPresidente(); disegnaParlamento(); btnPdC.style.display='block';
+  aggiornaPresidente(); disegnaParlamento(); btnCoalizione.style.display='block';
 }
 
-function aggiornaPresidente(){ if(presidente) presidenteDiv.innerHTML=`Presidente del Parlamento: <span style="color:${presidente.colore};font-weight:bold">${presidente.nome}</span>`; else presidenteDiv.textContent=''; }
+function aggiornaPresidente(){ 
+  if(presidente) presidenteDiv.innerHTML=`Presidente del Parlamento: <span style="color:${presidente.colore};font-weight:bold">${presidente.nome}</span>`; 
+  else presidenteDiv.textContent='';
+}
 
+/* --- COALIZIONE (GESTITA DALL'UTENTE) --- */
+function mostraCoalizione(){
+  coalizioneForm.innerHTML = '';
+  coalioneCreateInputs();
+  coalizioneContainer.style.display = 'block';
+  aggiornaTotaleCoalizione();
+}
 
-function nominaPdC() {
-  if (!presidente) return; // sicurezza
-  const dati = assegnaSeggi(); // aggiorna seggi
+function coalioneCreateInputs() {
+  coalizioneForm.innerHTML = ''; // svuota prima
+  partiti.forEach((p, i) => {
+    const div = document.createElement('div');
+    div.className = 'partito-coalizione';
 
-  const maxSeggi = Math.max(...dati.map(p => p.seggi));
-  const topPartiti = dati.filter(p => p.seggi === maxSeggi);
-  const pdcPartito = topPartiti[0];
+    const colorBox = document.createElement('div');
+    colorBox.style.width = '16px';
+    colorBox.style.height = '16px';
+    colorBox.style.borderRadius = '50%';
+    colorBox.style.border = '1px solid #999';
+    colorBox.style.background = p.colore;
 
-  // scegli i ministri: 6 membri della stessa ideologia
-  let stessiIdeologia = dati.filter(p => p.ideologia === pdcPartito.ideologia);
-  if (stessiIdeologia.length === 0) stessiIdeologia = dati.filter(p => p.ideologia === 'centro');
+    const label = document.createElement('label');
+    label.textContent = `${p.nome} (${p.ideologia})`;
 
-  const ministri = [];
-  while (ministri.length < 6) {
-    const candidato = stessiIdeologia[Math.floor(Math.random() * stessiIdeologia.length)];
-    ministri.push(candidato);
+    const cb = document.createElement('input');
+    cb.type = 'checkbox';
+    cb.value = p.nome;
+    if (coalizioneMaggioranza.find(c => c.nome === p.nome)) cb.checked = true;
+    cb.addEventListener('change', aggiornaTotaleCoalizione);
+
+    div.appendChild(colorBox);
+    div.appendChild(label);
+    div.appendChild(cb);
+    coalizioneForm.appendChild(div);
+  });
+
+  aggiornaTotaleCoalizione();
+}
+
+function aggiornaTotaleCoalizione() {
+  const checkboxes = coalizioneForm.querySelectorAll('input[type="checkbox"]');
+  let seggiTotali = 0;
+  checkboxes.forEach(cb => {
+    if (cb.checked) {
+      const p = partiti.find(x => x.nome === cb.value);
+      if (p) seggiTotali += Math.round(p.percentuale / 100 * SEGGI_TOTALI);
+    }
+  });
+
+  // messaggio dinamico
+  if (seggiTotali >= SEGGI_TOTALI / 2 + 1) {
+    coalTot.style.color = '#1f7a1f';
+    coalTot.textContent = `✅ La coalizione ha la maggioranza (${seggiTotali} seggi su ${SEGGI_TOTALI})`;
+  } else {
+    coalTot.style.color = '#b30000';
+    coalTot.textContent = `⚠️ Coalizione senza maggioranza (${seggiTotali} seggi su ${SEGGI_TOTALI})`;
   }
+}
 
-  presidenteConsiglio = {
-    nome: pdcPartito.nome,
-    colore: pdcPartito.colore,
-    ministri
-  };
+/* conferma/annulla coalizione */
+confermaCoalizione.addEventListener('click', ()=>{
+  const checked = [...coalizioneForm.querySelectorAll('input[type="checkbox"]:checked')].map(cb=>cb.value);
+  coalizioneMaggioranza = partiti.filter(p => checked.includes(p.nome));
+  if(coalizioneMaggioranza.length===0) return alert("Seleziona almeno un partito per la maggioranza.");
+  // salvo
+  localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
+  coalizioneContainer.style.display='none';
+  // mostro il bottone PdC
+  btnCoalizione.style.display='none';
+  btnPdC.style.display='block';
+  aggiornaLegenda();
+});
 
+annullaCoalizione.addEventListener('click', ()=>{
+  coalizioneContainer.style.display='none';
+});
+
+/* nomina PdC basata sulla coalizione */
+function nominaPdC() {
+  if (!coalizioneMaggioranza || coalizioneMaggioranza.length===0) return alert("Devi prima creare la coalizione!");
+  const dati = assegnaSeggi();
+  // cerco quale partito della coalizione ha più seggi
+  let maxSeggi = -1;
+  let pdcPartito = null;
+  coalizioneMaggioranza.forEach(c => {
+    const match = dati.find(d=>d.nome===c.nome);
+    const s = match ? match.seggi : 0;
+    if (s > maxSeggi){ maxSeggi = s; pdcPartito = c; }
+  });
+  if(!pdcPartito) return alert("Errore: nessun partito valido per PdC.");
+  // scelgo 6 ministri casualmente tra i partiti della maggioranza (possono ripetersi o no: scegliamo senza ripetizione finché possibile)
+  const ministri = [];
+  const pool = [...coalizioneMaggioranza];
+  while(ministri.length<6){
+    if(pool.length===0){
+      // riciclo dalla coalizione se partiti <6
+      pool.push(...coalizioneMaggioranza);
+    }
+    const idx = Math.floor(Math.random()*pool.length);
+    const scelto = pool.splice(idx,1)[0];
+    ministri.push({...scelto});
+  }
+  presidenteConsiglio = { nome: pdcPartito.nome, colore: pdcPartito.colore, ministri };
   localStorage.setItem('presidenteConsiglio', JSON.stringify(presidenteConsiglio));
-
   pdcDiv.innerHTML = `Presidente del Consiglio: <span style="color:${pdcPartito.colore};font-weight:bold">${pdcPartito.nome}</span>`;
-  btnPdC.style.display = presidente ? 'block' : 'none';
-  btnPdC.style.display = 'none';
+  btnPdC.style.display='none';
   disegnaParlamento();
 }
 
+/* EDIT PARTITO: qui correggo la logica che rompeva i riferimenti */
 editForm.addEventListener('submit', e=>{
   e.preventDefault();
-  const nome=editNome.value;
-  const colore=editColore.value;
-  const ideologia=editIdeologia.value;
-  const percentuale=parseFloat(editPercentuale.value);
-  const totEsistente=partiti.reduce((s,p,i)=>i!==editingIndex?s+p.percentuale:s,0);
-  if(totEsistente+percentuale>100) return alert(`Non puoi inserire più di ${100-totEsistente}%`);
-  partiti[editingIndex]={nome,colore,ideologia,percentuale};
-  editingIndex=null; editFormContainer.style.display='none'; presidente=null; presidenteConsiglio=null; salvaPartiti();
+  if (editingIndex === null || editingIndex === undefined) { editFormContainer.style.display='none'; return; }
+  const nomeNuovo = editNome.value.trim();
+  const coloreNuovo = editColore.value;
+  const ideologiaNuovo = editIdeologia.value;
+  const percentualeNuovo = parseFloat(editPercentuale.value);
+
+  // controllo percentuale: somma escludendo l'indice in modifica
+  const totEsistente = partiti.reduce((s,p,i)=> i===editingIndex ? s : s + p.percentuale, 0);
+  if (totEsistente + percentualeNuovo > 100) {
+    return alert(`Non puoi inserire più di ${100 - totEsistente}%`);
+  }
+
+
+  // applico la modifica
+  partiti[editingIndex] = {
+    nome: nomeNuovo,
+    colore: coloreNuovo,
+    ideologia: ideologiaNuovo,
+    percentuale: percentualeNuovo
+};
+
+// ogni modifica azzera governo, pdc e pdp
+presidente = null;
+presidenteConsiglio = null;
+coalizioneMaggioranza = [];
+
+editingIndex = null;
+editFormContainer.style.display = 'none';
+salvaPartiti();
 });
+
 editCancel.addEventListener('click', ()=>{ editingIndex=null; editFormContainer.style.display='none'; });
 
-function aggiornaPdC(){ if(presidenteConsiglio) pdcDiv.innerHTML=`Presidente del Consiglio: <span style="color:${presidenteConsiglio.colore}; font-weight:bold">${presidenteConsiglio.nome}</span>`; else pdcDiv.textContent=''; }
+function aggiornaPdC(){ 
+  if(presidenteConsiglio) pdcDiv.innerHTML=`Presidente del Consiglio: <span style="color:${presidenteConsiglio.colore}; font-weight:bold">${presidenteConsiglio.nome}</span>`; 
+  else pdcDiv.textContent='';
+}
+
+/* all'avvio: ricostruisco eventuali riferimenti coerenti (nel caso localStorage contenga dati) */
+(function reconciliaAllOnLoad(){
+  // se presidente salvato e partito esiste, aggiorniamo colore se necessario
+  if(presidente){
+    const found = partiti.find(p=>p.nome===presidente.nome);
+    if(found) presidente.colore = found.colore;
+    else presidente = null;
+  }
+  // coalizione: mantieni solo partiti ancora presenti
+  if(coalizioneMaggioranza && coalizioneMaggioranza.length){
+    coalizioneMaggioranza = coalizioneMaggioranza
+      .map(c=> partiti.find(p=>p.nome===c.nome) || null).filter(Boolean);
+  }
+  // PdC: se salvato, ricostruisci ministri e colori se possibile
+  if(presidenteConsiglio){
+    const found = partiti.find(p=>p.nome===presidenteConsiglio.nome);
+    if(found) presidenteConsiglio.colore = found.colore;
+    if(presidenteConsiglio.ministri && presidenteConsiglio.ministri.length){
+      presidenteConsiglio.ministri = presidenteConsiglio.ministri
+        .map(m => partiti.find(p=>p.nome===m.nome) || m);
+    }
+    // se PdC non appartiene più ai partiti, lo lasciamo comunque se il nome è presente in coalizione
+    const inPartiti = partiti.find(p=>p.nome===presidenteConsiglio.nome);
+    if(!inPartiti && (!coalizioneMaggioranza.find(c=>c.nome===presidenteConsiglio.nome))) {
+      // PdC non valido: rimuovi
+      presidenteConsiglio = null;
+    }
+  }
+  salvaPartiti();
+})();
+
 </script>
 </body>
 </html>

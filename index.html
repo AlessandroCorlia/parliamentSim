@@ -225,6 +225,96 @@
 #confermaCoalizione:hover, #annullaCoalizione:hover {
   transform: scale(1.03);
 }
+#btnLegge{
+  display:none;
+  margin-top:10px;
+  padding:14px 28px;
+  font-size:16px;
+  font-weight:600;
+  color:#fff;
+
+  background:linear-gradient(180deg,#6b1d1d,#4a1010);
+  border:2px solid #d1a654;
+  border-radius:10px;
+
+  box-shadow:0 4px 10px rgba(0,0,0,0.25);
+  cursor:pointer;
+  transition:0.2s;
+}
+
+#btnLegge:hover{
+  transform:scale(1.05);
+}
+#leggeContainer{
+  display:none;
+  position:absolute;
+  top:70px;
+  left:50%;
+  transform:translateX(-50%);
+  background:white;
+  padding:20px;
+  border-radius:12px;
+  border:2px solid #2e4a7d;
+  box-shadow:0 4px 16px rgba(0,0,0,0.25);
+  width:300px;
+  z-index:30;
+}
+
+#leggeContainer h3{
+  text-align:center;
+  color:#2e4a7d;
+  margin-bottom:10px;
+}
+
+#leggeContainer input,
+#leggeContainer select{
+  width:100%;
+  margin-bottom:10px;
+  padding:8px;
+}
+
+#risultatoLegge{
+  display:none;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+
+  background:rgba(0,0,0,0.4);
+
+  justify-content:center;
+  align-items:center;
+  z-index:30;
+}
+
+#risultatoBox{
+  background:white;
+  padding:30px;
+  border-radius:12px;
+
+  border:3px solid #2e4a7d;
+
+  text-align:center;
+  width:320px;
+
+  box-shadow:0 8px 20px rgba(0,0,0,0.3);
+}
+
+#risultatoBox h3{
+  margin-bottom:10px;
+  color:#2e4a7d;
+}
+
+#chiudiRisultato{
+  margin-top:15px;
+  padding:8px 18px;
+  background:#2e4a7d;
+  color:white;
+  border:none;
+  border-radius:6px;
+  cursor:pointer;
+}
 
   /* --- Media Queries per mobile --- */
   @media (max-width: 768px) {
@@ -258,7 +348,61 @@
 
 <div id="main">
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
+  <!-- Pulsante Leggi -->
+  <button id="btnArchivioLeggi" style="
+    position:absolute;
+    top:20px;
+    right:20px;
+    background: linear-gradient(90deg,#2e4a7d,#1f345a);
+    color:#fff;
+    border:none;
+    padding:10px 18px;
+    border-radius:10px;
+    font-weight:600;
+    cursor:pointer;
+    box-shadow:0 4px 12px rgba(0,0,0,0.25);
+    transition:0.3s;
+  ">📚 Archivio Leggi</button>
+  
+  <!-- Finestra Leggi -->
+  <div id="archivioLeggiContainer" style="
+    display:none;
+    position:absolute;
+    top:60px;
+    right:20px;
+    width:320px;
+    max-height:400px;
+    overflow-y:auto;
+    background:white;
+    border:2px solid #2e4a7d;
+    border-radius:12px;
+    box-shadow:0 4px 16px rgba(0,0,0,0.25);
+    padding:15px;
+    z-index:50;
+    font-family: 'Segoe UI', sans-serif;
+  ">
+    <h3 style="text-align:center; color:#2e4a7d; margin-bottom:10px;">Leggi Approvate</h3>
+    <div id="listaLeggi" style="font-size:14px;"></div>
+    <button id="chiudiArchivio" style="
+      margin-top:10px;
+      width:100%;
+      padding:8px;
+      background:#c22;
+      color:#fff;
+      border:none;
+      border-radius:8px;
+      cursor:pointer;
+      font-weight:600;
+    ">✖ Chiudi</button>
+  </div>
   <svg id="parlamento" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet"></svg>
+  <div id="risultatoLegge">
+    <div id="risultatoBox">
+      <h3>Esito della votazione</h3>
+      <p id="testoRisultato"></p>
+      <button id="chiudiRisultato">Chiudi</button>
+    </div>
+  </div>
   <button id="btnVota">🗳️ Eleggi Presidente del Parlamento</button>
   <button id="btnCoalizione">🤝 Crea Coalizione</button>
   <button id="btnPdC">👤 Nomina Presidente del Consiglio</button>
@@ -292,6 +436,21 @@
   <button id="confermaCoalizione">✅ Conferma Coalizione</button>
   <button id="annullaCoalizione" style="margin-left:8px;">✖ Annulla</button>
 </div>
+<div id="leggeContainer">
+  <h3>Proposta di legge</h3>
+
+  <input type="text" id="titoloLegge" placeholder="Titolo della legge">
+
+  <select id="tipoLegge">
+    <option value="governo">Proposta del Governo</option>
+    <option value="parlamento">Proposta del Parlamento</option>
+  </select>
+
+  <button id="inviaLegge">Invia al Parlamento</button>
+  <button id="annullaLegge">Annulla</button>
+</div>
+
+<div id="risultatoLegge"></div>
 
 
 <script>
@@ -326,6 +485,19 @@ const editColore = document.getElementById('editColore');
 const editIdeologia = document.getElementById('editIdeologia');
 const editPercentuale = document.getElementById('editPercentuale');
 const editCancel = document.getElementById('editCancel');
+
+const btnArchivioLeggi = document.getElementById("btnArchivioLeggi");
+const archivioLeggiContainer = document.getElementById("archivioLeggiContainer");
+const listaLeggi = document.getElementById("listaLeggi");
+const chiudiArchivio = document.getElementById("chiudiArchivio");
+
+
+const btnLegge = document.createElement("button");
+btnLegge.id = "btnLegge";
+btnLegge.textContent = "📜 Proponi Disegno di Legge";
+document.getElementById("main").appendChild(btnLegge);
+
+document.getElementById("main").appendChild(btnLegge);
 
 aggiornaLegenda();
 disegnaParlamento();
@@ -433,6 +605,8 @@ function aggiornaLegenda(){
   if (presidente && coalizioneMaggioranza.length===0) { btnCoalizione.style.display='block'; } else { btnCoalizione.style.display='none'; }
   // btnPdC compare solo se coalizione creata e PdC non ancora nominato
   if (coalizioneMaggioranza.length>0 && !presidenteConsiglio) { btnPdC.style.display='block'; } else { btnPdC.style.display='none'; }
+  //proponi legge non viene mostrato 
+  if (presidenteConsiglio && partiti.reduce((s,p)=>s+p.percentuale,0) === 100) { btnLegge.style.display = "inline-block"; } else {btnLegge.style.display = "none";}
   // reset button visibile quando parlamento pieno
   if(totPerc===100) btnReset.style.display='block'; else btnReset.style.display='none';
 }
@@ -466,7 +640,7 @@ function disegnaParlamento(){
         cerchio.setAttribute('data-partito', p.nome);
         cerchio.setAttribute('data-seggio', currentSeggi+1);
         const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-        title.textContent = `Seggio ${currentSeggi+1} — ${p.nome}}`;
+        title.textContent = `Seggio ${currentSeggi+1} — ${p.nome}`;
         cerchio.appendChild(title);
         parlamento.appendChild(cerchio);
         currentSeggi++; if(currentSeggi>=p.seggi) break;
@@ -650,8 +824,112 @@ function nominaPdC() {
   localStorage.setItem('presidenteConsiglio', JSON.stringify(presidenteConsiglio));
   pdcDiv.innerHTML = `Presidente del Consiglio: <span style="color:${pdcPartito.colore};font-weight:bold">${pdcPartito.nome}</span>`;
   btnPdC.style.display='none';
+  btnLegge.style.display="inline-block";
   disegnaParlamento();
+  
 }
+//PARTE LEGGI
+const leggeContainer = document.getElementById("leggeContainer");
+
+btnLegge.onclick = () =>{
+  leggeContainer.style.display="block";
+}
+document.getElementById("annullaLegge").onclick = ()=>{
+  leggeContainer.style.display="none";
+}
+document.getElementById("inviaLegge").onclick = ()=>{
+
+  const titolo = document.getElementById("titoloLegge").value;
+
+  // CALCOLO VOTAZIONE PARLAMENTO
+  let favorevoli = 0;
+  let contrari = 0;
+
+  const datiSeggi = assegnaSeggi();
+
+  datiSeggi.forEach(p=>{
+
+    if(coalizioneMaggioranza.some(c=>c.nome===p.nome)){
+
+      favorevoli += p.seggi;
+
+    }else{
+
+      contrari += p.seggi;
+
+    }
+
+  });
+
+  // RISULTATO VOTAZIONE
+  let testo="";
+
+  if(favorevoli>contrari){
+
+    testo = `${titolo}
+
+Favorevoli: ${favorevoli}
+Contrari: ${contrari}
+
+✔ La legge è APPROVATA`;
+
+    salvaLegge(titolo);
+
+  }else{
+
+    testo = `${titolo}
+
+Favorevoli: ${favorevoli}
+Contrari: ${contrari}
+
+✖ La legge è RESPINTA`;
+
+  }
+
+  document.getElementById("testoRisultato").textContent = testo;
+  document.getElementById("risultatoLegge").style.display="flex";
+  leggeContainer.style.display="none"; 
+
+}
+function salvaLegge(titolo){
+
+  let leggi = JSON.parse(localStorage.getItem("archivioLeggi")) || [];
+
+  leggi.push({
+    titolo: titolo,
+    data: new Date().toLocaleDateString()
+  });
+
+  localStorage.setItem("archivioLeggi", JSON.stringify(leggi));
+
+}
+document.getElementById("chiudiRisultato").onclick = ()=>{
+  document.getElementById("risultatoLegge").style.display="none";
+}
+btnArchivioLeggi.onclick = () => {
+  // svuota lista
+  listaLeggi.innerHTML = '';
+  // prendi le leggi salvate
+  const leggi = JSON.parse(localStorage.getItem("archivioLeggi")) || [];
+  if(leggi.length === 0){
+    listaLeggi.innerHTML = '<p style="text-align:center; color:#555;">Nessuna legge approvata</p>';
+  } else {
+    leggi.forEach(l => {
+      const div = document.createElement('div');
+      div.style.padding='6px 4px';
+      div.style.borderBottom='1px solid #ddd';
+      div.innerHTML = `<strong>${l.titolo}</strong><br><small>${l.data}</small>`;
+      listaLeggi.appendChild(div);
+    });
+  }
+  archivioLeggiContainer.style.display = 'block';
+}
+
+chiudiArchivio.onclick = () => {
+  archivioLeggiContainer.style.display = 'none';
+}
+//fine parte leggi
+
 
 /* EDIT PARTITO: qui correggo la logica che rompeva i riferimenti */
 editForm.addEventListener('submit', e=>{

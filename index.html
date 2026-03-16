@@ -461,6 +461,7 @@ let presidente = JSON.parse(localStorage.getItem('presidenteSalvato')) || null;
 let presidenteConsiglio = JSON.parse(localStorage.getItem('presidenteConsiglio')) || null;
 let coalizioneMaggioranza = JSON.parse(localStorage.getItem('coalizioneMaggioranza')) || [];
 let editingIndex = null;
+let databaseNomi = null;
 
 const form = document.getElementById('partitoForm');
 const parlamento = document.getElementById('parlamento');
@@ -503,6 +504,22 @@ aggiornaLegenda();
 disegnaParlamento();
 aggiornaPresidente();
 aggiornaPdC();
+
+fetch("names.json")
+  .then(r => r.json())
+  .then(data => {
+    console.log(data);
+    databaseNomi = data;
+  })
+  .catch(err => console.error(err));
+  
+function generaNomeCasuale(){
+  if(!databaseNomi) return "On. Deputato";
+  const genere = Math.random() < 0.5 ? "nomiMaschili" : "nomiFemminili";
+  const nome = databaseNomi[genere][Math.floor(Math.random()*databaseNomi[genere].length)];
+  const cognome = databaseNomi.cognomi[Math.floor(Math.random()*databaseNomi.cognomi.length)];
+  return "On. " + nome + " " + cognome;
+}
 
 form.addEventListener('submit', e=>{
   e.preventDefault();
@@ -628,6 +645,7 @@ function disegnaParlamento(){
         const x = cx + raggio*Math.cos(angolo); 
         const y = cy + raggio*Math.sin(angolo);
         const cerchio = document.createElementNS('http://www.w3.org/2000/svg','circle');
+        cerchio.nomeDeputato = generaNomeCasuale();
         cerchio.setAttribute('cx',x); cerchio.setAttribute('cy',y); cerchio.setAttribute('r',5); 
         // Se il partito è in maggioranza, colore normale, altrimenti colore schiarito
         let coloreFinale = (coalizioneMaggioranza.some(c => c.nome === p.nome)) 
@@ -640,7 +658,7 @@ function disegnaParlamento(){
         cerchio.setAttribute('data-partito', p.nome);
         cerchio.setAttribute('data-seggio', currentSeggi+1);
         const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-        title.textContent = `Seggio ${currentSeggi+1} — ${p.nome}`;
+        title.textContent = `${cerchio.nomeDeputato} — ${p.nome}`;
         cerchio.appendChild(title);
         parlamento.appendChild(cerchio);
         currentSeggi++; if(currentSeggi>=p.seggi) break;

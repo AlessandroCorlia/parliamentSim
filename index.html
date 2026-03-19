@@ -12,15 +12,16 @@
   <h1>Gestione Partiti</h1>
   <form id="partitoForm">
     <input type="text" id="nome" placeholder="Nome partito" required>
-    <input type="color" id="colore" value="#ff0000">
-    <select id="ideologia" required>
-      <option value="">-- Ideologia --</option>
+    <label for="">Colore partito:</label>
+    <input type="color" id="colore" value="#ff0000" style="cursor: pointer;">
+    <select id="ideologia" required style="cursor: pointer">
+      <option value="" disabled selected>Scegli ideologia</option>
       <option value="sinistra">Sinistra</option>
       <option value="centro">Centro</option>
       <option value="destra">Destra</option>
     </select>
-    <input type="number" id="percentuale" placeholder="%" min="0" max="100" required>
-    <button type="submit">Aggiungi Partito</button>
+    <input type="number" id="percentuale" placeholder="% Seggi" min="0" max="100" required>
+    <button type="submit">Eleggi Partito</button>
   </form>
   <div id="legenda"></div>
   <div id="percentuale-riempimento">Riempimento parlamento: 0%</div>

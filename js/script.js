@@ -163,7 +163,6 @@ function aggiornaLegenda(){
   const totPerc = partiti.reduce((s,p)=>s+p.percentuale,0);
   percentualeDiv.textContent=`Riempimento parlamento: ${totPerc}%`;
 
-  // pulsanti: logica
   // btnVota compare quando parlamento pieno e non è ancora stato eletto il presidente
   if(totPerc===100 && !presidente){ btnVota.style.display='block'; } else { btnVota.style.display='none'; }
   // btnCoalizione compare solo dopo elezione presidente e prima creazione coalizione
@@ -198,11 +197,11 @@ function disegnaParlamento(){
         // Se il partito è in maggioranza, colore normale, altrimenti colore schiarito
         let coloreFinale = (coalizioneMaggioranza.some(c => c.nome === p.nome)) 
                    ? p.colore 
-                   : schiarisciColore(p.colore, 0.55); // 60% più chiaro
+                   : schiarisciColore(p.colore, 0.55); // 55% più chiaro
         cerchio.setAttribute('fill', coloreFinale);
         // Bordo leggero per evidenziare maggioranza
         parlamento.appendChild(cerchio);
-        // aggiungo attributi per tooltip (title)
+        //tooltip
         cerchio.setAttribute('data-partito', p.nome);
         cerchio.setAttribute('data-seggio', currentSeggi+1);
         const title = document.createElementNS('http://www.w3.org/2000/svg','title');

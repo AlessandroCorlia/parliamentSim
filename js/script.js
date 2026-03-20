@@ -8,6 +8,7 @@ let coalizioneMaggioranza = JSON.parse(localStorage.getItem('coalizioneMaggioran
 let deputati = JSON.parse(localStorage.getItem("deputati")) || null;
 let editingIndex = null;
 let databaseNomi = null;
+let legislatura = parseInt(localStorage.getItem('legislatura')) || 1;
 //DICHIARAZIONE ELEMENTI HTML
 const form = document.getElementById('partitoForm');
 const parlamento = document.getElementById('parlamento');
@@ -46,6 +47,25 @@ document.getElementById("main").appendChild(btnLegge);
 
 document.getElementById("main").appendChild(btnLegge);
 
+function toRoman(num){
+  const map = [
+    [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
+    [100, "C"], [90, "XC"], [50, "L"], [40, "XL"],
+    [10, "X"], [9, "IX"], [5, "V"], [4, "IV"], [1, "I"]
+  ];
+  let result = "";
+  for (let [val, sym] of map) {
+    while (num >= val) {
+      result += sym;
+      num -= val;
+    }
+  }
+  return result;
+}
+const titoloParlamento = document.getElementById('titoloParlamento');
+function updateTitle(){
+  titoloParlamento.textContent = `Il Tuo Parlamento - Legislatura ${toRoman(legislatura)}`;
+}
 /*
 function render(){
   aggiornaLegenda();
@@ -59,6 +79,7 @@ aggiornaLegenda();
 //disegnaParlamento();
 aggiornaPresidente();
 aggiornaPdC();
+updateTitle();
 
 //FETCH DEI NOMI 
 fetch("data/names.json")
@@ -147,7 +168,7 @@ function aggiornaLegenda(){
     const testo=document.createElement('span');
     // se il partito è nella coalizione, aggiungo (Maggioranza) per chiarezza
     const inMaj = coalizioneMaggioranza.find(c=>c.nome===p.nome);
-    testo.textContent=`${p.nome} (${p.percentuale}%) - ${p.ideologia} - ${p.seggi} seggi${inMaj ? ' • maggioranza' : ''}`;
+    testo.textContent=`${p.nome} (${p.percentuale}%) - ${p.ideologia} - ${p.seggi} seggi${inMaj ? ' M' : ''}`;
     info.appendChild(colore); info.appendChild(testo);
 
     const btns=document.createElement('div'); btns.className='partito-btns';
@@ -177,6 +198,8 @@ function aggiornaLegenda(){
 
   const totPerc = partiti.reduce((s,p)=>s+p.percentuale,0);
   percentualeDiv.textContent=`Riempimento parlamento: ${totPerc}%`;
+  form.style.pointerEvents = (totPerc >= 100) ? "none" : "auto";
+  form.style.opacity = (totPerc >= 100) ? "0.5" : "1";
 
   // btnVota compare quando parlamento pieno e non è ancora stato eletto il presidente
   if(totPerc===100 && !presidente){ btnVota.style.display='block'; } else { btnVota.style.display='none'; }
@@ -230,7 +253,7 @@ function disegnaParlamento(){
 
   if(presidente){
     const presCircle=document.createElementNS('http://www.w3.org/2000/svg','circle');
-    presCircle.setAttribute('cx',400); presCircle.setAttribute('cy',430); presCircle.setAttribute('r',12);
+    presCircle.setAttribute('cx',400); presCircle.setAttribute('cy',430); presCircle.setAttribute('r',11);
     presCircle.setAttribute('fill',presidente.colore); presCircle.setAttribute('stroke','#333'); presCircle.setAttribute('stroke-width','2');
     const title = document.createElementNS('http://www.w3.org/2000/svg','title');
     title.textContent = `Presidente del Parlamento: ${presidente.nome} (${presidente.partito})`;
@@ -241,7 +264,7 @@ function disegnaParlamento(){
   if(presidenteConsiglio){
     const pdcc = presidenteConsiglio;
     const pdcCircle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    pdcCircle.setAttribute('cx',400); pdcCircle.setAttribute('cy',390); pdcCircle.setAttribute('r',12);
+    pdcCircle.setAttribute('cx',400); pdcCircle.setAttribute('cy',390); pdcCircle.setAttribute('r',10);
     pdcCircle.setAttribute('fill',pdcc.colore); pdcCircle.setAttribute('stroke','#333'); pdcCircle.setAttribute('stroke-width','2');
     const title = document.createElementNS('http://www.w3.org/2000/svg','title');
     title.textContent = `Presidente del Consiglio: ${pdcc.nome} (${pdcc.partito})`;
@@ -266,7 +289,7 @@ function disegnaParlamento(){
 btnVota.addEventListener('click', simulaVotoPresidente);
 btnCoalizione.addEventListener('click', mostraCoalizione);
 btnPdC.addEventListener('click', nominaPdC);
-btnReset.addEventListener('click', ()=>{ partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; salvaPartiti(); });
+btnReset.addEventListener('click', ()=>{ partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
 
 function scegliPresidente(){
   const dati=assegnaSeggi();
@@ -493,7 +516,8 @@ function salvaLegge(titolo){
 
   leggi.push({
     titolo: titolo,
-    data: new Date().toLocaleDateString()
+    data: new Date().toLocaleDateString(),
+    legislatura: legislatura
   });
 
   localStorage.setItem("archivioLeggi", JSON.stringify(leggi));
@@ -503,21 +527,45 @@ document.getElementById("chiudiRisultato").onclick = ()=>{
   document.getElementById("risultatoLegge").style.display="none";
 }
 btnArchivioLeggi.onclick = () => {
-  // svuota lista
   listaLeggi.innerHTML = '';
-  // prendi le leggi salvate
   const leggi = JSON.parse(localStorage.getItem("archivioLeggi")) || [];
-  if(leggi.length === 0){
+
+  if (leggi.length === 0) {
     listaLeggi.innerHTML = '<p style="text-align:center; color:#555;">Nessuna legge approvata</p>';
   } else {
+    // raggruppa le leggi per legislatura
+    const leggiPerLegislatura = {};
     leggi.forEach(l => {
-      const div = document.createElement('div');
-      div.style.padding='6px 4px';
-      div.style.borderBottom='1px solid #ddd';
-      div.innerHTML = `<strong>${l.titolo}</strong><br><small>${l.data}</small>`;
-      listaLeggi.appendChild(div);
+      const legNum = l.legislatura || 1;
+      if (!leggiPerLegislatura[legNum]) leggiPerLegislatura[legNum] = [];
+      leggiPerLegislatura[legNum].push(l);
+    });
+
+    // ordina le legislature dal più recente al più vecchio
+    const legislatureOrdinate = Object.keys(leggiPerLegislatura).sort((a,b)=>b-a);
+
+    legislatureOrdinate.forEach(legNum => {
+      const blocco = document.createElement('div');
+      blocco.style.marginBottom = '12px';
+
+      const titoloLeg = document.createElement('h4');
+      titoloLeg.textContent = `Legislatura ${toRoman(parseInt(legNum))}`;
+      titoloLeg.style.margin = '2px 0';
+      blocco.appendChild(titoloLeg);
+
+      leggiPerLegislatura[legNum].forEach(l => {
+        const div = document.createElement('div');
+        div.style.padding='6px 4px';
+        div.style.borderBottom='1px solid #000000';
+        div.style.fontSize='12px'
+        div.innerHTML = `<strong>${l.titolo}</strong><br><small>${l.data}</small>`;
+        blocco.appendChild(div);
+      });
+
+      listaLeggi.appendChild(blocco);
     });
   }
+
   archivioLeggiContainer.style.display = 'block';
 }
 

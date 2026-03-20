@@ -46,15 +46,6 @@ document.getElementById("main").appendChild(btnLegge);
 
 document.getElementById("main").appendChild(btnLegge);
 
-/*
-function render(){
-  aggiornaLegenda();
-  aggiornaPresidente();
-  aggiornaPdC();
-  disegnaParlamento();
-}
-*/
-
 aggiornaLegenda();
 //disegnaParlamento();
 aggiornaPresidente();

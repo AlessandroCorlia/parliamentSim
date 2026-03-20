@@ -405,6 +405,7 @@ annullaCoalizione.addEventListener('click', ()=>{
 
 /* nomina PdC basata sulla coalizione */
 function nominaPdC() {
+  let governoAttivo = false; //PER ALTRI VOTI FUTURI
   if (!coalizioneMaggioranza || coalizioneMaggioranza.length===0) return alert("Devi prima creare la coalizione!");
   const dati = assegnaSeggi();
   // cerco quale partito della coalizione ha più seggi
@@ -446,6 +447,9 @@ function nominaPdC() {
   btnPdC.style.display='none';
   btnLegge.style.display="inline-block";
   disegnaParlamento();
+  setTimeout(() => {
+    votoFiducia();
+  }, 500);
 }
 //PARTE LEGGI
 const leggeContainer = document.getElementById("leggeContainer");
@@ -646,3 +650,81 @@ function aggiornaPdC(){
   }
   //salvaPartiti();
 })();
+
+async function votoFiducia() {
+  const dati = assegnaSeggi();
+  let favorevoli = 0;
+  let contrari = 0;
+  let astenuti = 0;
+
+  const cerchi = [...parlamento.querySelectorAll('circle')]
+    .filter(c => !c.classList.contains('pdc') && !c.classList.contains('presidente'));
+
+  // memorizza i colori originali
+  const coloriOriginali = cerchi.map(c => {
+    const partito = dati.find(p => p.nome === c.getAttribute('data-partito'));
+    if (!partito) return "#ccc";
+    return (coalizioneMaggioranza.some(c => c.nome === partito.nome)) 
+           ? partito.colore 
+           : schiarisciColore(partito.colore, 0.55);
+  });
+
+  // reset classi precedenti
+  cerchi.forEach(c => c.classList.remove('voto-si', 'voto-no', 'voto-astenuto'));
+
+  for (let i = 0; i < cerchi.length; i++) {
+    const cerchio = cerchi[i];
+    const partito = dati.find(p => p.nome === cerchio.getAttribute('data-partito'));
+    if (!partito) continue;
+
+    let voto;
+    const inMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
+    const rand = Math.random();
+
+    if (inMaggioranza) {
+      voto = rand < 0.9 ? "si" : "no";
+      voto === "si" ? favorevoli++ : contrari++;
+    } else {
+      if (rand < 0.85) { voto = "no"; contrari++; }
+      else if (rand < 0.95) { voto = "astenuto"; astenuti++; }
+      else { voto = "si"; favorevoli++; }
+    }
+
+    cerchio.setAttribute('fill',
+      voto === "si" ? "#00a900" :
+      voto === "no" ? "#ff0000" :
+      "#999999"
+    );
+
+    await new Promise(r => setTimeout(r, 0.03));
+  }
+
+  const soglia = Math.floor(SEGGI_TOTALI / 2) + 1;
+  if (favorevoli >= soglia) {
+    // lampeggio finale verde
+    for (let j = 0; j < 2; j++) {
+      cerchi.forEach(c => c.setAttribute('fill', '#00a900'));
+      await new Promise(r => setTimeout(r, 1000));
+      // ripristino colori originali
+      cerchi.forEach((c,i) => c.setAttribute('fill', coloriOriginali[i]));
+      await new Promise(r => setTimeout(r, 1000));
+    }
+
+    alert(`✅ Governo approvato!\nFavorevoli: ${favorevoli}\nContrari: ${contrari}\nAstenuti: ${astenuti}`);
+    btnLegge.style.display = "inline-block";
+
+  } else {
+    alert(`❌ Governo bocciato!\nFavorevoli: ${favorevoli}\nContrari: ${contrari}\nAstenuti: ${astenuti}`);
+    // reset governo
+    presidenteConsiglio = null;
+    coalizioneMaggioranza = [];
+    localStorage.removeItem("presidenteConsiglio");
+    localStorage.removeItem("coalizioneMaggioranza");
+    aggiornaPdC();
+    aggiornaLegenda();
+    disegnaParlamento();
+    btnLegge.style.display = "none";
+    btnPdC.style.display = "none";
+    btnCoalizione.style.display = "block";
+  }
+}

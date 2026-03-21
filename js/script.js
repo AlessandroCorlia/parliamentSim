@@ -711,6 +711,7 @@ async function votoFiducia() {
     }
 
     alert(`✅ Governo approvato!\nFavorevoli: ${favorevoli}\nContrari: ${contrari}\nAstenuti: ${astenuti}`);
+    disegnaParlamento();
     btnLegge.style.display = "inline-block";
 
   } else {

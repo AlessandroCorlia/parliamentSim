@@ -45,8 +45,6 @@ btnLegge.id = "btnLegge";
 btnLegge.textContent = "📜 Proponi Disegno di Legge";
 document.getElementById("main").appendChild(btnLegge);
 
-document.getElementById("main").appendChild(btnLegge);
-
 function toRoman(num){
   const map = [
     [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
@@ -448,72 +446,67 @@ function nominaPdC() {
   btnLegge.style.display="inline-block";
   disegnaParlamento();
   setTimeout(() => {
-    votoFiducia();
+    simulaVotazione({tipo: "fiducia"});
   }, 500);
 }
 //PARTE LEGGI
 const leggeContainer = document.getElementById("leggeContainer");
 
-btnLegge.onclick = () =>{
-  leggeContainer.style.display="block";
-}
-document.getElementById("annullaLegge").onclick = ()=>{
-  leggeContainer.style.display="none";
-}
-document.getElementById("inviaLegge").onclick = ()=>{
+const partitoProponenteDiv = document.getElementById("partitoProponenteDiv"); // contenitore select
+const partitoProponenteSelect = document.getElementById("partitoProponente");
 
-  const titolo = document.getElementById("titoloLegge").value;
+btnLegge.onclick = () => {
+  leggeContainer.style.display = "block";
 
-  // CALCOLO VOTAZIONE PARLAMENTO
-  let favorevoli = 0;
-  let contrari = 0;
+  // reset campi
+  document.getElementById("titoloLegge").value = "";
+  document.getElementById("tipoLegge").value = "";
+  partitoProponenteDiv.style.display = "none";
+  partitoProponenteSelect.innerHTML = "";
+};
 
-  const datiSeggi = assegnaSeggi();
+// mostra/nasconde select a seconda del tipo di legge
+document.getElementById("tipoLegge").addEventListener("change", () => {
+  const tipo = document.getElementById("tipoLegge").value;
 
-  datiSeggi.forEach(p=>{
-
-    if(coalizioneMaggioranza.some(c=>c.nome===p.nome)){
-
-      favorevoli += p.seggi;
-
-    }else{
-
-      contrari += p.seggi;
-
-    }
-
-  });
-
-  // RISULTATO VOTAZIONE
-  let testo="";
-
-  if(favorevoli>contrari){
-
-    testo = `${titolo}
-
-Favorevoli: ${favorevoli}
-Contrari: ${contrari}
-
-✔ La legge è APPROVATA`;
-
-    salvaLegge(titolo);
-
-  }else{
-
-    testo = `${titolo}
-
-Favorevoli: ${favorevoli}
-Contrari: ${contrari}
-
-✖ La legge è RESPINTA`;
-
+  if (tipo === "parlamento") {
+    partitoProponenteDiv.style.display = "block";
+    partitoProponenteSelect.innerHTML = "";
+    partiti.forEach(p => {
+      const opt = document.createElement("option");
+      opt.value = p.nome;
+      opt.textContent = p.nome;
+      partitoProponenteSelect.appendChild(opt);
+    });
+  } else {
+    partitoProponenteDiv.style.display = "none";
+    partitoProponenteSelect.innerHTML = "";
   }
+});
 
-  document.getElementById("testoRisultato").textContent = testo;
-  document.getElementById("risultatoLegge").style.display="flex";
-  leggeContainer.style.display="none"; 
+document.getElementById("annullaLegge").onclick = () => {
+  leggeContainer.style.display = "none";
+};
 
-}
+document.getElementById("inviaLegge").onclick = () => {
+  const titolo = document.getElementById("titoloLegge").value;
+  const tipo = document.getElementById("tipoLegge").value;
+  const proponente = partitoProponenteSelect.value || null;
+
+  if (!titolo.trim()) return;
+  if (!tipo) return alert("❌ Seleziona un tipo di legge prima di inviare.");
+
+  leggeContainer.style.display = "none";
+
+  simulaVotazione({
+    tipo: "legge",
+    titolo: titolo,
+    proponente: proponente,
+    tipoLegge: tipo,
+    salva: true
+  });
+};
+
 function salvaLegge(titolo){
 
   let leggi = JSON.parse(localStorage.getItem("archivioLeggi")) || [];
@@ -650,7 +643,21 @@ function aggiornaPdC(){
   }
   //salvaPartiti();
 })();
+const modal = document.getElementById("modalVoto");
+const modalTitolo = document.getElementById("modalTitolo");
+const modalTesto = document.getElementById("modalTesto");
+const chiudiModal = document.getElementById("chiudiModal");
 
+function mostraRisultato(titolo, testo) {
+  modalTitolo.textContent = titolo;
+  modalTesto.textContent = testo;
+  modal.style.display = "block";
+}
+
+chiudiModal.onclick = () => {
+  modal.style.display = "none";
+};
+/*
 async function votoFiducia() {
   const dati = assegnaSeggi();
   let favorevoli = 0;
@@ -709,13 +716,12 @@ async function votoFiducia() {
       cerchi.forEach((c,i) => c.setAttribute('fill', coloriOriginali[i]));
       await new Promise(r => setTimeout(r, 1000));
     }
-
-    alert(`✅ Governo approvato!\nFavorevoli: ${favorevoli}\nContrari: ${contrari}\nAstenuti: ${astenuti}`);
+    mostraRisultato("✅ Governo approvato",`Favorevoli: ${favorevoli}; Contrari: ${contrari}; Astenuti: ${astenuti}`);
     disegnaParlamento();
     btnLegge.style.display = "inline-block";
 
   } else {
-    alert(`❌ Governo bocciato!\nFavorevoli: ${favorevoli}\nContrari: ${contrari}\nAstenuti: ${astenuti}`);
+    mostraRisultato("❌ Governo bocciato!", `Favorevoli: ${favorevoli}; Contrari: ${contrari}; Astenuti: ${astenuti};`);
     // reset governo
     presidenteConsiglio = null;
     coalizioneMaggioranza = [];
@@ -728,4 +734,141 @@ async function votoFiducia() {
     btnPdC.style.display = "none";
     btnCoalizione.style.display = "block";
   }
+}
+  */
+
+async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = null, tipoLegge = null}) {
+
+  const dati = assegnaSeggi();
+  let favorevoli = 0;
+  let contrari = 0;
+  let astenuti = 0;
+
+  const cerchi = [...parlamento.querySelectorAll('circle')]
+    .filter(c => !c.classList.contains('pdc') && !c.classList.contains('presidente'));
+
+  // reset colori iniziali
+  const coloriOriginali = cerchi.map(c => {
+    const partito = dati.find(p => p.nome === c.getAttribute('data-partito'));
+    if (!partito) return "#ccc";
+    return (coalizioneMaggioranza.some(c => c.nome === partito.nome)) 
+      ? partito.colore 
+      : schiarisciColore(partito.colore, 0.55);
+  });
+
+  // ANIMAZIONE VOTO
+  for (let i = 0; i < cerchi.length; i++) {
+
+    const cerchio = cerchi[i];
+    const partito = dati.find(p => p.nome === cerchio.getAttribute('data-partito'));
+    if (!partito) continue;
+
+    let voto;
+    const inMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
+    const rand = Math.random();
+
+    // LOGICA DIVERSA PER TIPO
+    if (tipo === "fiducia") {
+
+      if (inMaggioranza) {
+        voto = rand < 0.9 ? "si" : "no";
+      } else {
+        if (rand < 0.85) voto = "no";
+        else if (rand < 0.95) voto = "astenuto";
+        else voto = "si";
+      }
+
+    } else if (tipo === "legge") {
+
+      const èMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
+      const èProponente = partito.nome === proponente;
+      const proponenteInMaggioranza = coalizioneMaggioranza.some(c => c.nome === proponente);
+
+      if (tipoLegge === "governo") {
+        // simile alla fiducia
+        if (èMaggioranza) voto = Math.random() < 0.95 ? "si" : "astenuto";
+        else voto = Math.random() < 0.8 ? "no" : "astenuto";
+      }
+    
+      else if (tipoLegge === "parlamento") {
+      
+        if (èProponente) {
+          voto = "si"; // il partito proponente vota sempre sì
+        }
+      
+        else if (proponenteInMaggioranza) {
+          // proposta della maggioranza
+          if (èMaggioranza) voto = Math.random() < 0.9 ? "si" : "astenuto";
+          else voto = Math.random() < 0.7 ? "no" : "astenuto";
+        }
+      
+        else {
+          // 🔴 proposta opposizione → quasi sempre bocciata
+          if (èMaggioranza) {
+            voto = Math.random() < 0.85 ? "no" : "astenuto";
+          } else {
+            voto = Math.random() < 0.6 ? "si" : "astenuto";
+          }
+        }
+      }
+    }
+
+    // conteggio
+    if (voto === "si") favorevoli++;
+    else if (voto === "no") contrari++;
+    else astenuti++;
+
+    // colore
+    cerchio.setAttribute('fill',
+      voto === "si" ? "#00a900" :
+      voto === "no" ? "#ff0000" :
+      "#999999"
+    );
+
+    await new Promise(r => setTimeout(r, 2));
+  }
+
+  const soglia = Math.floor(SEGGI_TOTALI / 2) + 1;
+  const approvato = favorevoli >= soglia;
+
+  // LAMPEGGIO FINALE
+  for (let j = 0; j < 2; j++) {
+    cerchi.forEach(c => c.setAttribute('fill', approvato ? '#00a900' : '#ff0000'));
+    await new Promise(r => setTimeout(r, 400));
+    cerchi.forEach((c,i) => c.setAttribute('fill', coloriOriginali[i]));
+    await new Promise(r => setTimeout(r, 400));
+  }
+
+  // RISULTATO
+  mostraRisultato(
+    approvato ? "✅ Approvato" : "❌ Respinto",
+    `Favorevoli: ${favorevoli}
+     Contrari: ${contrari}
+     Astenuti: ${astenuti}`
+  );
+
+  // AZIONI POST
+  if (tipo === "fiducia") {
+
+    if (!approvato) {
+      presidenteConsiglio = null;
+      coalizioneMaggioranza = [];
+      localStorage.removeItem("presidenteConsiglio");
+      localStorage.removeItem("coalizioneMaggioranza");
+      aggiornaPdC();
+      aggiornaLegenda();
+      btnLegge.style.display = "none";
+      btnPdC.style.display = "none";
+      btnCoalizione.style.display = "block";
+    } else {
+      btnLegge.style.display = "inline-block";
+    }
+
+  }
+
+  if (tipo === "legge" && approvato && salva) {
+    salvaLegge(titolo);
+  }
+
+  disegnaParlamento();
 }

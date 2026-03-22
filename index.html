@@ -76,6 +76,13 @@
     ">✖ Chiudi</button>
   </div>
   <svg id="parlamento" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet"></svg>
+  <div id="modalVoto" class="modal">
+    <div class="modal-content">
+      <h3 id="modalTitolo"></h3>
+      <p id="modalTesto"></p>
+      <button id="chiudiModal">Chiudi</button>
+    </div>
+  </div>
   <div id="risultatoLegge">
     <div id="risultatoBox">
       <h3>Esito della votazione</h3>
@@ -122,13 +129,19 @@
   <input type="text" id="titoloLegge" placeholder="Titolo della legge">
 
   <select id="tipoLegge">
+    <option value="" disabled selected>Seleziona tipo legge</option>
     <option value="governo">Proposta del Governo</option>
     <option value="parlamento">Proposta del Parlamento</option>
   </select>
 
+  <div id="partitoProponenteDiv" style="display:none; margin-top:8px;">
+    <select id="partitoProponente"></select>
+  </div>
+
   <button id="inviaLegge">Invia al Parlamento</button>
   <button id="annullaLegge">Annulla</button>
 </div>
+
 <div id="risultatoLegge"></div>
 <script src="js/script.js"></script>
 </body>

@@ -507,12 +507,13 @@ document.getElementById("inviaLegge").onclick = () => {
   });
 };
 
-function salvaLegge(titolo){
+function salvaLegge(titolo, tipoLegge){
 
   let leggi = JSON.parse(localStorage.getItem("archivioLeggi")) || [];
 
   leggi.push({
     titolo: titolo,
+    tipo: tipoLegge,
     data: new Date().toLocaleDateString(),
     legislatura: legislatura
   });
@@ -555,7 +556,7 @@ btnArchivioLeggi.onclick = () => {
         div.style.padding='6px 4px';
         div.style.borderBottom='1px solid #000000';
         div.style.fontSize='12px'
-        div.innerHTML = `<strong>${l.titolo}</strong><br><small>${l.data}</small>`;
+        div.innerHTML = `<strong>${l.titolo}</strong><br><small>Tipo: ${l.tipo==="governo" ? "Proposta del Governo" : "Proposta del Parlamento"}</small><br><small>Data:${l.data}</small>`;
         blocco.appendChild(div);
       });
 
@@ -867,7 +868,7 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
   }
 
   if (tipo === "legge" && approvato && salva) {
-    salvaLegge(titolo);
+    salvaLegge(titolo, tipoLegge);
   }
 
   disegnaParlamento();

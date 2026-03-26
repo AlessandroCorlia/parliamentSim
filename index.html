@@ -28,21 +28,7 @@
 </div>
 <div id="main">
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
-  <!-- Pulsante Leggi -->
-  <button id="btnArchivioLeggi" style="
-    position:absolute;
-    top:20px;
-    right:20px;
-    background: linear-gradient(90deg,#2e4a7d,#1f345a);
-    color:#fff;
-    border:none;
-    padding:10px 18px;
-    border-radius:10px;
-    font-weight:600;
-    cursor:pointer;
-    box-shadow:0 4px 12px rgba(0,0,0,0.25);
-    transition:0.3s;
-  ">📚 Archivio Leggi</button>
+  
   
   <!-- Finestra Leggi -->
   <div id="archivioLeggiContainer" style="
@@ -90,14 +76,28 @@
       <button id="chiudiRisultato">Chiudi</button>
     </div>
   </div>
-  <button id="btnVota">🗳️ Eleggi Presidente del Parlamento</button>
-  <button id="btnCoalizione">🤝 Crea Coalizione</button>
-  <button id="btnPdC">👤 Nomina Presidente del Consiglio</button>
-  <button id="btnReset">⚖️ Sciogli Parlamento</button>
+  
   <div id="presidente"></div>
   <div id="pdcDiv"></div>
 </div>
+<div id="azioni">
+  <h2>Azioni</h2>
 
+  <div class="azione-blocco">
+    <h4>⚖️ Gestione Parlamento</h4>
+    <button id="btnVota">🗳️ Eleggi Presidente del Parlamento</button>
+    <button id="btnCoalizione">🤝 Crea Coalizione</button>
+    <button id="btnPdC">👤 Nomina Presidnte del Consiglio</button>
+    <button id="btnReset">⚖️ Sciogli Parlamento</button>
+  </div>
+
+  <div class="azione-blocco">
+    <h4>📜 Attività Legislativa</h4>
+    <button id="btnLegge">📜 Proponi Disegno di Legge</button>
+    <button id="btnArchivioLeggi">📚 Archivio Leggi</button>
+  </div>
+
+</div>
 <!-- Form Modifica Partito -->
 <div id="editFormContainer">
   <h3>Modifica Partito</h3>

@@ -116,7 +116,7 @@
     cursor:pointer;
     transition:0.2s;
     letter-spacing:0.5px;
-    max-width: 90%;
+    max-width: 100%;
   }
 
   #btnVota:hover, #btnReset:hover, #btnPdC:hover, #btnCoalizione:hover { transform:scale(1.04); box-shadow:0 6px 12px rgba(0,0,0,0.25); }
@@ -357,3 +357,65 @@
     #btnVota, #btnPdC, #btnReset, #btnCoalizione { width: 90%; font-size: 14px; padding:12px; margin-top:10px; }
     #presidente, #pdcDiv { font-size:16px; }
   }
+  #azioni {
+  background: linear-gradient(180deg,#f7f8fa 0%,#e9eaee 100%);
+  box-shadow:-2px 0 10px rgba(0,0,0,0.1);
+  width:260px;
+  padding:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  border-radius:16px 0 0 16px;
+}
+
+#azioni h2 {
+  text-align:center;
+  color:#2e4a7d;
+  border-bottom:2px solid #d1a654;
+  padding-bottom:8px;
+  margin-bottom:10px;
+}
+
+/* blocchi */
+.azione-blocco {
+  background:#ffffff;
+  padding:12px;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.08);
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+
+/* titoli piccoli */
+.azione-blocco h4 {
+  margin:0 0 5px 0;
+  font-size:13px;
+  color:#2e4a7d;
+  border-bottom:1px solid #ddd;
+  padding-bottom:4px;
+}
+
+/* bottoni */
+#azioni button {
+  width:100%;
+  padding:10px;
+  font-size:13px;
+  font-weight:600;
+  border-radius:8px;
+  transition:0.2s;
+}
+
+#azioni button:hover {
+  transform:scale(1.03);
+}
+#btnArchivioLeggi{
+  display: block !important;
+}
+@media (max-width: 768px) {
+  #azioni {
+    width: 80vw;
+    border-radius:16px;
+    margin-top:10px;
+  }
+}

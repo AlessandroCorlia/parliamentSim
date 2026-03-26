@@ -39,12 +39,13 @@ const archivioLeggiContainer = document.getElementById("archivioLeggiContainer")
 const listaLeggi = document.getElementById("listaLeggi");
 const chiudiArchivio = document.getElementById("chiudiArchivio");
 
-
+/*
 const btnLegge = document.createElement("button");
 btnLegge.id = "btnLegge";
 btnLegge.textContent = "📜 Proponi Disegno di Legge";
-document.getElementById("main").appendChild(btnLegge);
-
+document.getElementById("azioni").appendChild(btnLegge);
+*/
+const btnLegge = document.getElementById("btnLegge");
 function toRoman(num){
   const map = [
     [1000, "M"], [900, "CM"], [500, "D"], [400, "CD"],
@@ -276,7 +277,7 @@ function disegnaParlamento(){
       cerchio.setAttribute('fill',m.colore); cerchio.setAttribute('stroke','#333'); cerchio.setAttribute('stroke-width','1');
       const titleM = document.createElementNS('http://www.w3.org/2000/svg','title');
       // assegno ruoli ministeriali in ordine
-      const ruoli = ['Interno','Economia','Difesa','Esteri','Giustizia','Salute'];
+      const ruoli = [`Ministro dell'Interno`,`Ministro dell'Economia`,`Ministro della Difesa`,`Ministro degli Esteri`,`Ministro della Giustizia`,`Ministro della Salute`];
       titleM.textContent = `${ruoli[i]}: ${m.nome} (${m.partito})`;
       cerchio.appendChild(titleM);
       parlamento.appendChild(cerchio);

@@ -140,6 +140,17 @@ function salvaPartiti(){
 }
 
 function assegnaSeggi(){ return partiti.map(p=>({...p, seggi: Math.round(p.percentuale/100*SEGGI_TOTALI)})); }
+
+function haMaggioranza() {
+  let seggi = 0;
+
+  coalizioneMaggioranza.forEach(c => {
+    const p = partiti.find(x => x.nome === c.nome);
+    if (p) seggi += Math.round(p.percentuale / 100 * SEGGI_TOTALI);
+  });
+
+  return seggi >= (SEGGI_TOTALI / 2 + 1);
+}
 // Schiarisce un colore esadecimale di una percentuale
 function schiarisciColore(hex, percent) {
   let r = parseInt(hex.slice(1,3),16);
@@ -785,6 +796,7 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
       const èMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
       const èProponente = partito.nome === proponente;
       const proponenteInMaggioranza = coalizioneMaggioranza.some(c => c.nome === proponente);
+      const partitoProponenteObj = partiti.find(p => p.nome === proponente);
 
       if (tipoLegge === "governo") {
         // simile alla fiducia
@@ -809,7 +821,18 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
           if (èMaggioranza) {
             voto = Math.random() < 0.85 ? "no" : "astenuto";
           } else {
-            voto = Math.random() < 0.6 ? "si" : "astenuto";
+            // opposizione
+            if (!partitoProponenteObj) {
+              voto = "astenuto";
+            } 
+            else if (partito.ideologia === partitoProponenteObj.ideologia) {
+              // stessa ideologia → tende a votare sì
+              voto = Math.random() < 0.7 ? "si" : "astenuto";
+            } 
+            else {
+              // ideologia diversa → vota contro
+              voto = Math.random() < 0.75 ? "no" : "astenuto";
+            }
           }
         }
       }
@@ -874,3 +897,61 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
 
   disegnaParlamento();
 }
+function rimuoviDaMaggioranza(nomePartito) {
+
+  // 1. rimuovi il partito
+  coalizioneMaggioranza = coalizioneMaggioranza.filter(p => p.nome !== nomePartito);
+
+  localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
+
+  // 2. rimuovi i ministri di quel partito
+  if (presidenteConsiglio && presidenteConsiglio.ministri) {
+
+    presidenteConsiglio.ministri = presidenteConsiglio.ministri.map(m => {
+
+      if (m.partito === nomePartito) {
+
+        // scegli nuovo partito dalla maggioranza
+        const nuovo = coalizioneMaggioranza[Math.floor(Math.random() * coalizioneMaggioranza.length)];
+
+        const nomeMinistro = deputati[Math.floor(Math.random() * deputati.length)];
+
+        return {
+          nome: nomeMinistro,
+          partito: nuovo.nome,
+          colore: nuovo.colore
+        };
+      }
+
+      return m;
+    });
+
+    localStorage.setItem('presidenteConsiglio', JSON.stringify(presidenteConsiglio));
+  }
+
+  // 3. aggiornamento grafico
+  aggiornaLegenda();
+  disegnaParlamento();
+
+  // 4. nuova fiducia
+  setTimeout(() => {
+    simulaVotazione({ tipo: "fiducia" });
+  }, 500);
+}
+
+function aggiungiAMaggioranza(nomePartito) {
+
+  const partito = partiti.find(p => p.nome === nomePartito);
+  if (!partito) return;
+
+  // evita duplicati
+  if (coalizioneMaggioranza.some(p => p.nome === nomePartito)) return;
+
+  coalizioneMaggioranza.push(partito);
+
+  localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
+
+  aggiornaLegenda();
+  disegnaParlamento();
+}
+

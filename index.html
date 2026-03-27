@@ -8,6 +8,7 @@
 <title>Create your own Parliament</title>
 </head>
 <body>
+<!--Colonna Gestione Partiti-->
 <div id="menu">
   <h1>Gestione Partiti</h1>
   <form id="partitoForm">
@@ -28,9 +29,7 @@
 </div>
 <div id="main">
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
-  
-  
-  <!-- Finestra Leggi -->
+  <!-- Finestra Leggi Approvate -->
   <div id="archivioLeggiContainer" style="
     display:none;
     position:absolute;
@@ -69,6 +68,17 @@
       <button id="chiudiModal">Chiudi</button>
     </div>
   </div>
+  <div id="modalConferma" class="modal">
+  <div class="modal-content">
+    <h3 id="confermaTitolo"></h3>
+    <p id="confermaTesto"></p>
+    
+    <div style="margin-top:15px; display:flex; gap:10px; justify-content:center;">
+      <button id="btnConfermaSi">✅ Sì</button>
+      <button id="btnConfermaNo">❌ No</button>
+    </div>
+  </div>
+</div>
   <div id="risultatoLegge">
     <div id="risultatoBox">
       <h3>Esito della votazione</h3>
@@ -80,6 +90,7 @@
   <div id="presidente"></div>
   <div id="pdcDiv"></div>
 </div>
+<!--Colonna azioni-->
 <div id="azioni">
   <h2>Azioni</h2>
 
@@ -87,19 +98,27 @@
     <h4>⚖️ Gestione Parlamento</h4>
     <button id="btnVota">🗳️ Eleggi Presidente del Parlamento</button>
     <button id="btnCoalizione">🤝 Crea Coalizione</button>
-    <button id="btnPdC">👤 Nomina Presidnte del Consiglio</button>
+    <button id="btnPdC">👤 Nomina Presidente del Consiglio</button>
+    <!--<button id="btnFiducia">🗳️ Vota Fiducia</button>
+    <button id="btnSfiducia">🗳️ Vota Sfiducia</button>-->
     <button id="btnReset">⚖️ Sciogli Parlamento</button>
   </div>
   
   <div class="azione-blocco">
-    <h4>🏛️ Gestione Maggioranza</h4>
-    <button id="btnCoalizione">🤝 Gestione Maggioranza</button>
+    <h4>🤝 Gestione Maggioranza</h4>
+    <button id="btnEntraMag">✅ Entra in Maggioranza</button>
+    <button id="btnEsciMag">❌ Esci dalla Maggioranza</button>
   </div>
 
   <div class="azione-blocco">
     <h4>📜 Attività Legislativa</h4>
     <button id="btnLegge">📜 Proponi Disegno di Legge</button>
     <button id="btnArchivioLeggi">📚 Archivio Leggi</button>
+  </div>
+
+  <div class="azione-blocco">
+    <h4>🏛️ Gestione Governo</h4>
+    <button id="btnDimissioni">👤❌ Dimissioni Premier</button>
   </div>
 
 </div>

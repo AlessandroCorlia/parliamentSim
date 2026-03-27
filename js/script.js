@@ -25,6 +25,7 @@ const coalizioneForm = document.getElementById('coalizioneForm');
 const coalTot = document.getElementById('coalTot');
 const confermaCoalizione = document.getElementById('confermaCoalizione');
 const annullaCoalizione = document.getElementById('annullaCoalizione');
+const btnDimissioni = document.getElementById("btnDimissioni");
 
 const editFormContainer = document.getElementById('editFormContainer');
 const editForm = document.getElementById('editForm');
@@ -74,7 +75,7 @@ function render(){
 }
 */
 
-aggiornaLegenda();
+aggiornaUI();
 //disegnaParlamento();
 aggiornaPresidente();
 aggiornaPdC();
@@ -133,7 +134,7 @@ function salvaPartiti(){
   localStorage.setItem('presidenteSalvato', JSON.stringify(presidente));
   localStorage.setItem('presidenteConsiglio', JSON.stringify(presidenteConsiglio));
   localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
-  aggiornaLegenda();
+  aggiornaUI();
   disegnaParlamento();
   aggiornaPresidente();
   aggiornaPdC();
@@ -164,7 +165,7 @@ function schiarisciColore(hex, percent) {
   return `rgb(${r},${g},${b})`;
 }
 
-function aggiornaLegenda(){
+function aggiornaUI(){
   legenda.innerHTML='';
   const dati=assegnaSeggi();
   dati.forEach((p,i)=>{
@@ -211,12 +212,16 @@ function aggiornaLegenda(){
   form.style.pointerEvents = (totPerc >= 100) ? "none" : "auto";
   form.style.opacity = (totPerc >= 100) ? "0.5" : "1";
 
+  // OPZIONI VISIBILITA'
+
   // btnVota compare quando parlamento pieno e non è ancora stato eletto il presidente
   if(totPerc===100 && !presidente){ btnVota.style.display='block'; } else { btnVota.style.display='none'; }
   // btnCoalizione compare solo dopo elezione presidente e prima creazione coalizione
   if (presidente && coalizioneMaggioranza.length===0) { btnCoalizione.style.display='block'; } else { btnCoalizione.style.display='none'; }
   // btnPdC compare solo se coalizione creata e PdC non ancora nominato
   if (coalizioneMaggioranza.length>0 && !presidenteConsiglio) { btnPdC.style.display='block'; } else { btnPdC.style.display='none'; }
+  // mostra dimissioni solo se esiste un governo
+  if (presidenteConsiglio) { btnDimissioni.style.display = "block"; } else { btnDimissioni.style.display = "none"; }
   //proponi legge non viene mostrato 
   if (presidenteConsiglio && partiti.reduce((s,p)=>s+p.percentuale,0) === 100) { btnLegge.style.display = "inline-block"; } else {btnLegge.style.display = "none";}
   // reset button visibile quando parlamento pieno
@@ -299,7 +304,9 @@ function disegnaParlamento(){
 btnVota.addEventListener('click', simulaVotoPresidente);
 btnCoalizione.addEventListener('click', mostraCoalizione);
 btnPdC.addEventListener('click', nominaPdC);
-btnReset.addEventListener('click', ()=>{ partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
+btnReset.addEventListener('click', async ()=>{const conferma = await mostraConferma("⚠️ Scioglimento Parlamento", `Vuoi sciogliere il Parlamento? Verranno azzerati <strong>partiti, governo e coalizione</strong>.`); 
+  partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
+btnDimissioni.addEventListener("click", dimissioniPremier);
 
 function scegliPresidente(){
   const dati=assegnaSeggi();
@@ -406,7 +413,7 @@ confermaCoalizione.addEventListener('click', ()=>{
   // mostro il bottone PdC
   btnCoalizione.style.display='none';
   btnPdC.style.display='block';
-  aggiornaLegenda();
+  aggiornaUI();
 });
 
 annullaCoalizione.addEventListener('click', ()=>{
@@ -460,6 +467,43 @@ function nominaPdC() {
   setTimeout(() => {
     simulaVotazione({tipo: "fiducia"});
   }, 500);
+}
+async function dimissioniPremier() {
+
+  if (!presidenteConsiglio) return;
+  
+  const nomePdC = presidenteConsiglio.nome;
+
+  const conferma = await mostraConferma(
+    "⚠️ Conferma dimissioni",
+    `Il Presidente del Consiglio <strong>${nomePdC}</strong> vuole dimettersi. <p>Accogli le dimissioni?</p>`
+  );
+  if (!conferma) return;
+
+  // ❌ rimuovo governo
+  presidenteConsiglio = null;
+
+  // ❌ sciolgo la maggioranza
+  coalizioneMaggioranza = [];
+
+  // 🔄 aggiorno storage
+  localStorage.removeItem("presidenteConsiglio");
+  localStorage.removeItem("coalizioneMaggioranza");
+
+  // 🔄 UI
+  aggiornaPdC();
+  aggiornaUI();
+  disegnaParlamento();
+
+  // 🔁 torna alla fase coalizione
+  btnCoalizione.style.display = "block";
+  btnPdC.style.display = "none";
+  btnLegge.style.display = "none";
+
+  mostraRisultato(
+    "❌ Dimissioni del Governo",
+    `Il Presidente del Consiglio ${nomePdC} si è dimesso. È necessario formare una nuova maggioranza.`
+  );
 }
 //PARTE LEGGI
 const leggeContainer = document.getElementById("leggeContainer");
@@ -656,10 +700,19 @@ function aggiornaPdC(){
   }
   //salvaPartiti();
 })();
+
+//MODAL VOTAZIONI
 const modal = document.getElementById("modalVoto");
 const modalTitolo = document.getElementById("modalTitolo");
 const modalTesto = document.getElementById("modalTesto");
 const chiudiModal = document.getElementById("chiudiModal");
+
+//MODAL CONFERMA
+const modalConferma = document.getElementById("modalConferma");
+const confermaTitolo = document.getElementById("confermaTitolo");
+const confermaTesto = document.getElementById("confermaTesto");
+const btnConfermaSi = document.getElementById("btnConfermaSi");
+const btnConfermaNo = document.getElementById("btnConfermaNo");
 
 function mostraRisultato(titolo, testo) {
   modalTitolo.textContent = titolo;
@@ -670,85 +723,25 @@ function mostraRisultato(titolo, testo) {
 chiudiModal.onclick = () => {
   modal.style.display = "none";
 };
-/*
-async function votoFiducia() {
-  const dati = assegnaSeggi();
-  let favorevoli = 0;
-  let contrari = 0;
-  let astenuti = 0;
 
-  const cerchi = [...parlamento.querySelectorAll('circle')]
-    .filter(c => !c.classList.contains('pdc') && !c.classList.contains('presidente'));
+function mostraConferma(titolo, testo) {
+  return new Promise(resolve => {
+    confermaTitolo.textContent = titolo;
+    confermaTesto.innerHTML = testo;
+    modalConferma.style.display = "block";
 
-  // memorizza i colori originali
-  const coloriOriginali = cerchi.map(c => {
-    const partito = dati.find(p => p.nome === c.getAttribute('data-partito'));
-    if (!partito) return "#ccc";
-    return (coalizioneMaggioranza.some(c => c.nome === partito.nome)) 
-           ? partito.colore 
-           : schiarisciColore(partito.colore, 0.55);
+    btnConfermaSi.onclick = () => {
+      modalConferma.style.display = "none";
+      resolve(true);
+    };
+
+    btnConfermaNo.onclick = () => {
+      modalConferma.style.display = "none";
+      resolve(false);
+    };
   });
-
-  // reset classi precedenti
-  cerchi.forEach(c => c.classList.remove('voto-si', 'voto-no', 'voto-astenuto'));
-
-  for (let i = 0; i < cerchi.length; i++) {
-    const cerchio = cerchi[i];
-    const partito = dati.find(p => p.nome === cerchio.getAttribute('data-partito'));
-    if (!partito) continue;
-
-    let voto;
-    const inMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
-    const rand = Math.random();
-
-    if (inMaggioranza) {
-      voto = rand < 0.9 ? "si" : "no";
-      voto === "si" ? favorevoli++ : contrari++;
-    } else {
-      if (rand < 0.85) { voto = "no"; contrari++; }
-      else if (rand < 0.95) { voto = "astenuto"; astenuti++; }
-      else { voto = "si"; favorevoli++; }
-    }
-
-    cerchio.setAttribute('fill',
-      voto === "si" ? "#00a900" :
-      voto === "no" ? "#ff0000" :
-      "#999999"
-    );
-
-    await new Promise(r => setTimeout(r, 0.03));
-  }
-
-  const soglia = Math.floor(SEGGI_TOTALI / 2) + 1;
-  if (favorevoli >= soglia) {
-    // lampeggio finale verde
-    for (let j = 0; j < 2; j++) {
-      cerchi.forEach(c => c.setAttribute('fill', '#00a900'));
-      await new Promise(r => setTimeout(r, 1000));
-      // ripristino colori originali
-      cerchi.forEach((c,i) => c.setAttribute('fill', coloriOriginali[i]));
-      await new Promise(r => setTimeout(r, 1000));
-    }
-    mostraRisultato("✅ Governo approvato",`Favorevoli: ${favorevoli}; Contrari: ${contrari}; Astenuti: ${astenuti}`);
-    disegnaParlamento();
-    btnLegge.style.display = "inline-block";
-
-  } else {
-    mostraRisultato("❌ Governo bocciato!", `Favorevoli: ${favorevoli}; Contrari: ${contrari}; Astenuti: ${astenuti};`);
-    // reset governo
-    presidenteConsiglio = null;
-    coalizioneMaggioranza = [];
-    localStorage.removeItem("presidenteConsiglio");
-    localStorage.removeItem("coalizioneMaggioranza");
-    aggiornaPdC();
-    aggiornaLegenda();
-    disegnaParlamento();
-    btnLegge.style.display = "none";
-    btnPdC.style.display = "none";
-    btnCoalizione.style.display = "block";
-  }
 }
-  */
+
 
 async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = null, tipoLegge = null}) {
 
@@ -881,7 +874,7 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
       localStorage.removeItem("presidenteConsiglio");
       localStorage.removeItem("coalizioneMaggioranza");
       aggiornaPdC();
-      aggiornaLegenda();
+      aggiornaUI();
       btnLegge.style.display = "none";
       btnPdC.style.display = "none";
       btnCoalizione.style.display = "block";
@@ -930,7 +923,7 @@ function rimuoviDaMaggioranza(nomePartito) {
   }
 
   // 3. aggiornamento grafico
-  aggiornaLegenda();
+  aggiornaUI();
   disegnaParlamento();
 
   // 4. nuova fiducia
@@ -951,7 +944,7 @@ function aggiungiAMaggioranza(nomePartito) {
 
   localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
 
-  aggiornaLegenda();
+  aggiornaUI();
   disegnaParlamento();
 }
 

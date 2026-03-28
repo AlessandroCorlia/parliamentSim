@@ -126,8 +126,89 @@
   #btnVota { background:linear-gradient(180deg,#2e4a7d 0%,#22365e 100%); }
 
   #presidente, #pdcDiv { font-size:18px; margin-top:15px; color:#2e4a7d; font-weight:600; text-align: center; }
+  #editFormContainer{
+    display:none;
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
 
-  #editFormContainer, #coalizioneContainer {
+    background:rgba(0,0,0,0.4);
+
+    justify-content:center;
+    align-items:center;
+
+    z-index:100;
+  }
+  .edit-box{
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  border:3px solid #2e4a7d;
+
+  width:320px;
+  text-align:center;
+
+  box-shadow:0 8px 20px rgba(0,0,0,0.3);
+  animation: fadeIn 0.3s ease;
+  }
+  .edit-box form{
+    background:transparent;
+    box-shadow:none;
+    padding:0;
+  }
+
+  .edit-box h3{
+    color:#2e4a7d;
+    margin-bottom:15px;
+  }
+
+  .edit-box input,
+  .edit-box select{
+    width:100%;
+    margin-top:10px;
+  }
+  .edit-box label{
+  display:block;
+  text-align:left;
+  margin-top:12px;
+  margin-bottom:4px;
+  font-size:13px;
+  color:#2e4a7d;
+  font-weight:600;
+}
+
+.edit-box input,
+.edit-box select{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #ccc;
+  font-size:14px;
+  transition:0.2s;
+}
+
+/* effetto focus più moderno */
+.edit-box input:focus,
+.edit-box select:focus{
+  outline:none;
+  border-color:#2e4a7d;
+  box-shadow:0 0 0 2px rgba(46,74,125,0.15);
+}
+#editColore{
+  width:60px;
+  height:40px;
+  padding:2px;
+}
+
+  .edit-btns{
+    margin-top:15px;
+    display:flex;
+    justify-content:center;
+    gap:10px;
+  }
+  #coalizioneContainer {
     display:none;
     position:absolute;
     top:50px;
@@ -239,17 +320,19 @@
 }
 #leggeContainer{
   display:none;
-  position:absolute;
-  top:70px;
-  left:50%;
-  transform:translateX(-50%);
-  background:white;
-  padding:20px;
-  border-radius:12px;
-  border:2px solid #2e4a7d;
-  box-shadow:0 4px 16px rgba(0,0,0,0.25);
-  width:300px;
-  z-index:30;
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+
+  background:rgba(0,0,0,0.4);
+
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  z-index:100;
 }
 
 #leggeContainer h3{
@@ -260,9 +343,12 @@
 
 #leggeContainer input,
 #leggeContainer select{
-  width:100%;
-  margin-bottom:10px;
-  padding:8px;
+  width: 100%;
+  padding: 8px;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
 }
 
 #risultatoLegge{
@@ -278,6 +364,74 @@
   justify-content:center;
   align-items:center;
   z-index:30;
+}
+.archivio-box {
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+/* lista leggi */
+#listaLeggi {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+/* blocco legislatura */
+.blocco-legislatura {
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #ddd;
+}
+
+.blocco-legislatura h4 {
+  margin: 5px 0;
+  color: #2e4a7d;
+  border-bottom: 1px solid #d1a654;
+  padding-bottom: 3px;
+}
+
+/* singola legge */
+.legge-item {
+  background: #f8f9fc;
+  border-radius: 8px;
+  padding: 6px 8px;
+  margin-top: 6px;
+  border-left: 4px solid #2e4a7d;
+}
+
+.legge-item small {
+  display: block;
+  color: #555;
+}
+.legge-box{
+  background:white;
+  padding:25px;
+  border-radius:12px;
+  border:3px solid #2e4a7d;
+
+  width:320px;
+  text-align:center;
+
+  box-shadow:0 8px 20px rgba(0,0,0,0.3);
+  animation: fadeIn 0.3s ease;
+}
+
+.legge-box h3{
+  color:#2e4a7d;
+  margin-bottom:15px;
+}
+
+.legge-box input,
+.legge-box select{
+  width:100%;
+  margin-top:10px;
+}
+
+.legge-btns{
+  margin-top:15px;
+  display:flex;
+  justify-content:center;
+  gap:10px;
 }
 
 #risultatoBox{

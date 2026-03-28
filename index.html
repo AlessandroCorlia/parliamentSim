@@ -30,36 +30,15 @@
 <div id="main">
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
   <!-- Finestra Leggi Approvate -->
-  <div id="archivioLeggiContainer" style="
-    display:none;
-    position:absolute;
-    top:60px;
-    right:20px;
-    width:320px;
-    max-height:400px;
-    overflow-y:auto;
-    background:white;
-    border:2px solid #2e4a7d;
-    border-radius:12px;
-    box-shadow:0 4px 16px rgba(0,0,0,0.25);
-    padding:15px;
-    z-index:50;
-    font-family: 'Segoe UI', sans-serif;
-  ">
-    <h3 style="text-align:center; color:#2e4a7d; margin-bottom:10px;">Leggi Approvate</h3>
-    <div id="listaLeggi" style="font-size:14px;"></div>
-    <button id="chiudiArchivio" style="
-      margin-top:10px;
-      width:100%;
-      padding:8px;
-      background:#c22;
-      color:#fff;
-      border:none;
-      border-radius:8px;
-      cursor:pointer;
-      font-weight:600;
-    ">✖ Chiudi</button>
+  <div id="archivioLeggi" class="modal">
+  <div class="modal-content archivio-box">
+    <h3>📚 Leggi Approvate</h3>
+
+    <div id="listaLeggi"></div>
+
+    <button id="chiudiArchivio">Chiudi</button>
   </div>
+</div>
   <svg id="parlamento" viewBox="0 0 800 450" preserveAspectRatio="xMidYMid meet"></svg>
   <div id="modalVoto" class="modal">
     <div class="modal-content">
@@ -124,20 +103,33 @@
 </div>
 <!-- Form Modifica Partito -->
 <div id="editFormContainer">
-  <h3>Modifica Partito</h3>
-  <form id="editForm">
-    <input type="text" id="editNome" required>
-    <input type="color" id="editColore">
-    <select id="editIdeologia" required>
-      <option value="sinistra">Sinistra</option>
-      <option value="centro">Centro</option>
-      <option value="destra">Destra</option>
-    </select>
-    <input type="number" id="editPercentuale" min="0" max="100" required>
-    <button type="submit">Salva Modifica</button>
-    <button type="button" id="editCancel">Annulla</button>
-  </form>
+  <div class="edit-box">
+
+    <h3>✏️ Modifica Partito</h3>
+
+    <form id="editForm">
+      <label>Cambia nome</label>
+      <input type="text" id="editNome" required>
+      <label>Cambia colore</label>
+      <input type="color" id="editColore">
+      <label>Cambia ideologia</label>
+      <select id="editIdeologia" required>
+        <option value="sinistra">Sinistra</option>
+        <option value="centro">Centro</option>
+        <option value="destra">Destra</option>
+      </select>
+      <label>Cambia % seggi</label>
+      <input type="number" id="editPercentuale" min="0" max="100" required>
+
+      <div class="edit-btns">
+        <button type="submit">Salva</button>
+        <button type="button" id="editCancel">Annulla</button>
+      </div>
+    </form>
+
+  </div>
 </div>
+
 
 <!-- Form Creazione Coalizione -->
 <div id="coalizioneContainer">
@@ -147,23 +139,30 @@
   <button id="confermaCoalizione">✅ Conferma Coalizione</button>
   <button id="annullaCoalizione" style="margin-left:8px;">✖ Annulla</button>
 </div>
-<div id="leggeContainer">
-  <h3>Proposta di legge</h3>
 
-  <input type="text" id="titoloLegge" placeholder="Titolo della legge">
+<div id="leggeContainer" style="display: none;">
+  <div class="legge-box">
 
-  <select id="tipoLegge">
-    <option value="" disabled selected>Seleziona tipo legge</option>
-    <option value="governo">Proposta del Governo</option>
-    <option value="parlamento">Proposta del Parlamento</option>
-  </select>
+    <h3>📜 Proposta di legge</h3>
 
-  <div id="partitoProponenteDiv" style="display:none; margin-top:8px;">
-    <select id="partitoProponente"></select>
+    <input type="text" id="titoloLegge" placeholder="Titolo della legge">
+
+    <select id="tipoLegge">
+      <option value="" disabled selected>Seleziona tipo legge</option>
+      <option value="governo">Proposta del Governo</option>
+      <option value="parlamento">Proposta del Parlamento</option>
+    </select>
+
+    <div id="partitoProponenteDiv" style="display:none; margin-top:8px;">
+      <select id="partitoProponente"></select>
+    </div>
+
+    <div class="legge-btns">
+      <button id="inviaLegge">Invia</button>
+      <button id="annullaLegge">Annulla</button>
+    </div>
+
   </div>
-
-  <button id="inviaLegge">Invia al Parlamento</button>
-  <button id="annullaLegge">Annulla</button>
 </div>
 
 <div id="risultatoLegge"></div>

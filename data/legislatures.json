@@ -1,0 +1,99 @@
+{
+  "parlamenti": [
+    {
+      "id": "italia_2022",
+      "nome": "Italia 2022",
+      "legislatura": 19,
+      "descrizione": "Elezioni politiche 2022",
+      "partiti": [
+        {
+          "nome": "Fratelli d'Italia",
+          "colore": "#0a3d91",
+          "ideologia": "destra",
+          "percentuale": 26
+        },
+        {
+          "nome": "Partito Democratico",
+          "colore": "#e31e24",
+          "ideologia": "sinistra",
+          "percentuale": 19
+        },
+        {
+          "nome": "Movimento 5 Stelle",
+          "colore": "#f4d03f",
+          "ideologia": "centro",
+          "percentuale": 15
+        },
+        {
+          "nome": "Lega",
+          "colore": "#1b8f3a",
+          "ideologia": "destra",
+          "percentuale": 9
+        },
+        {
+          "nome": "Forza Italia",
+          "colore": "#2e86de",
+          "ideologia": "centro",
+          "percentuale": 8
+        },
+        {
+          "nome": "Azione - Italia Viva",
+          "colore": "#ff7f50",
+          "ideologia": "centro",
+          "percentuale": 8
+        },
+        {
+          "nome": "Altri",
+          "colore": "#888888",
+          "ideologia": "centro",
+          "percentuale": 15
+        }
+      ]
+    },
+
+    {
+      "id": "italia_2018",
+      "nome": "Italia 2018",
+      "legislatura": 18,
+      "descrizione": "Elezioni politiche 2018",
+      "partiti": [
+        {
+          "nome": "Movimento 5 Stelle",
+          "colore": "#f4d03f",
+          "ideologia": "centro",
+          "percentuale": 33
+        },
+        {
+          "nome": "Lega",
+          "colore": "#1b8f3a",
+          "ideologia": "destra",
+          "percentuale": 17
+        },
+        {
+          "nome": "Partito Democratico",
+          "colore": "#e31e24",
+          "ideologia": "sinistra",
+          "percentuale": 19
+        },
+        {
+          "nome": "Forza Italia",
+          "colore": "#2e86de",
+          "ideologia": "centro",
+          "percentuale": 14
+        },
+        {
+          "nome": "Fratelli d'Italia",
+          "colore": "#0a3d91",
+          "ideologia": "destra",
+          "percentuale": 4
+        },
+        {
+          "nome": "Altri",
+          "colore": "#888888",
+          "ideologia": "centro",
+          "percentuale": 13
+        }
+      ]
+    }
+  ]
+}

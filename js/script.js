@@ -36,7 +36,7 @@ const editPercentuale = document.getElementById('editPercentuale');
 const editCancel = document.getElementById('editCancel');
 
 const btnArchivioLeggi = document.getElementById("btnArchivioLeggi");
-const archivioLeggiContainer = document.getElementById("archivioLeggiContainer");
+const archivioLeggiContainer = document.getElementById("archivioLeggi");
 const listaLeggi = document.getElementById("listaLeggi");
 const chiudiArchivio = document.getElementById("chiudiArchivio");
 
@@ -199,7 +199,7 @@ function aggiornaUI(){
       editColore.value=p.colore; 
       editIdeologia.value=p.ideologia; 
       editPercentuale.value=p.percentuale; 
-      editFormContainer.style.display='block'; 
+      editFormContainer.style.display='flex'; 
     };
     btns.appendChild(btnEdit); btns.appendChild(btnDel);
 
@@ -513,7 +513,7 @@ const partitoProponenteDiv = document.getElementById("partitoProponenteDiv"); //
 const partitoProponenteSelect = document.getElementById("partitoProponente");
 
 btnLegge.onclick = () => {
-  leggeContainer.style.display = "block";
+  leggeContainer.style.display = "flex";
 
   // reset campi
   document.getElementById("titoloLegge").value = "";
@@ -588,47 +588,58 @@ btnArchivioLeggi.onclick = () => {
   if (leggi.length === 0) {
     listaLeggi.innerHTML = '<p style="text-align:center; color:#555;">Nessuna legge approvata</p>';
   } else {
-    // raggruppa le leggi per legislatura
+
     const leggiPerLegislatura = {};
+
     leggi.forEach(l => {
       const legNum = l.legislatura || 1;
       if (!leggiPerLegislatura[legNum]) leggiPerLegislatura[legNum] = [];
       leggiPerLegislatura[legNum].push(l);
     });
 
-    // ordina le legislature dal più recente al più vecchio
     const legislatureOrdinate = Object.keys(leggiPerLegislatura).sort((a,b)=>b-a);
 
     legislatureOrdinate.forEach(legNum => {
-      const blocco = document.createElement('div');
-      blocco.style.marginBottom = '12px';
 
-      const titoloLeg = document.createElement('h4');
-      titoloLeg.textContent = `Legislatura ${toRoman(parseInt(legNum))}`;
-      titoloLeg.style.margin = '2px 0';
-      blocco.appendChild(titoloLeg);
+      const blocco = document.createElement('div');
+      blocco.className = 'blocco-legislatura';
+
+      const titolo = document.createElement('h4');
+      titolo.textContent = `Legislatura ${toRoman(parseInt(legNum))}`;
+      blocco.appendChild(titolo);
 
       leggiPerLegislatura[legNum].forEach(l => {
-        const div = document.createElement('div');
-        div.style.padding='6px 4px';
-        div.style.borderBottom='1px solid #000000';
-        div.style.fontSize='12px'
-        div.innerHTML = `<strong>${l.titolo}</strong><br><small>Tipo: ${l.tipo==="governo" ? "Proposta del Governo" : "Proposta del Parlamento"}</small><br><small>Data:${l.data}</small>`;
-        blocco.appendChild(div);
+
+        const item = document.createElement('div');
+        item.className = 'legge-item';
+
+        item.innerHTML = `
+          <strong>${l.titolo}</strong>
+          <small>${l.tipo === "governo" ? "Proposta del Governo" : "Proposta del Parlamento"}</small>
+          <small>${l.data}</small>
+        `;
+
+        blocco.appendChild(item);
       });
 
       listaLeggi.appendChild(blocco);
     });
   }
 
-  archivioLeggiContainer.style.display = 'block';
-}
+  archivioLeggiContainer.style.display = "block";
+};
 
 chiudiArchivio.onclick = () => {
-  archivioLeggiContainer.style.display = 'none';
-}
+  archivioLeggiContainer.style.display = "none";
+};
 //fine parte leggi
-
+document.querySelectorAll(".modal").forEach(modal => {
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      modal.style.display = "none";
+    }
+  });
+});
 
 /* EDIT PARTITO: qui correggo la logica che rompeva i riferimenti */
 editForm.addEventListener('submit', e=>{

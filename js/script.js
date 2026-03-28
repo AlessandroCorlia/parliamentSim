@@ -304,8 +304,8 @@ function disegnaParlamento(){
 btnVota.addEventListener('click', simulaVotoPresidente);
 btnCoalizione.addEventListener('click', mostraCoalizione);
 btnPdC.addEventListener('click', nominaPdC);
-btnReset.addEventListener('click', async ()=>{const conferma = await mostraConferma("⚠️ Scioglimento Parlamento", `Vuoi sciogliere il Parlamento? Verranno azzerati <strong>partiti, governo e coalizione</strong>.`); 
-  partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
+btnReset.addEventListener('click', async ()=>{const conferma = await mostraConferma("⚠️ Scioglimento Parlamento", `Vuoi sciogliere il Parlamento? Verranno indette nuove elezioni.`); 
+if(!conferma) return;  partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
 btnDimissioni.addEventListener("click", dimissioniPremier);
 
 function scegliPresidente(){
@@ -463,6 +463,7 @@ function nominaPdC() {
   pdcDiv.innerHTML = `Presidente del Consiglio: <span style="color:${pdcPartito.colore};font-weight:bold">${presidenteConsiglio.nome}</span> (${presidenteConsiglio.partito})`;
   btnPdC.style.display='none';
   btnLegge.style.display="inline-block";
+  aggiornaUI();
   disegnaParlamento();
   setTimeout(() => {
     simulaVotazione({tipo: "fiducia"});

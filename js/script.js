@@ -105,6 +105,8 @@ function generaNomeCasuale(index){
   return "On. Deputato";
 }
 
+
+//FINE CARICAMENTO PARLAMENTI
 form.addEventListener('submit', e=>{
   e.preventDefault();
   const nome = document.getElementById('nome').value.trim();
@@ -299,6 +301,72 @@ function disegnaParlamento(){
       parlamento.appendChild(cerchio);
     });
   }
+}
+//FETCH PARLAMENTI PASSATI
+let parlamentiDisponibili = [];
+
+fetch("data/legislatures.json")
+  .then(r => r.json())
+  .then(data => {
+    parlamentiDisponibili = data.parlamenti;
+  });
+
+const btnCaricaParlamento = document.getElementById("btnCaricaParlamento");
+const modalParlamenti = document.getElementById("modalParlamenti");
+const listaParlamenti = document.getElementById("listaParlamenti");
+const chiudiParlamenti = document.getElementById("chiudiParlamenti");
+
+btnCaricaParlamento.onclick = () => {
+  listaParlamenti.innerHTML = "";
+
+  parlamentiDisponibili.forEach(p => {
+    const btn = document.createElement("button");
+    btn.textContent = `${p.nome} (Leg. ${p.legislatura})`;
+
+    btn.onclick = () => caricaParlamento(p);
+
+    listaParlamenti.appendChild(btn);
+  });
+
+  modalParlamenti.style.display = "block";
+};
+
+chiudiParlamenti.onclick = () => {
+  modalParlamenti.style.display = "none";
+};
+function caricaParlamento(p) {
+
+  // reset totale stato
+  partiti = [...p.partiti];
+  presidente = null;
+  presidenteConsiglio = null;
+  coalizioneMaggioranza = [];
+
+  // aggiorna legislatura
+  legislatura = p.legislatura || 1;
+  localStorage.setItem('legislatura', legislatura);
+
+  // salva partiti
+  localStorage.setItem('partitiSalvati', JSON.stringify(partiti));
+  localStorage.removeItem('presidenteSalvato');
+  localStorage.removeItem('presidenteConsiglio');
+  localStorage.removeItem('coalizioneMaggioranza');
+
+  // UI update
+  updateTitle();
+  aggiornaUI();
+  aggiornaPresidente();
+  aggiornaPdC();
+  disegnaParlamento();
+
+  // chiudi modale
+  modalParlamenti.style.display = "none";
+
+  // feedback utente
+  mostraRisultato(
+    "📂 Parlamento caricato",
+    `${p.nome} è stato caricato con successo`
+  );
 }
 
 btnVota.addEventListener('click', simulaVotoPresidente);

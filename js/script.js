@@ -309,6 +309,7 @@ fetch("data/legislatures.json")
   .then(r => r.json())
   .then(data => {
     parlamentiDisponibili = data.parlamenti;
+    console.log(parlamentiDisponibili)
   });
 
 const btnCaricaParlamento = document.getElementById("btnCaricaParlamento");

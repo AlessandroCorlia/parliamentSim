@@ -286,6 +286,65 @@
   transition: 0.2s;
   color: #fff;
 }
+/* contenitore lista parlamenti */
+#listaParlamenti {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* singolo bottone legislatura */
+.parlamento-btn {
+  background: linear-gradient(135deg, #f8f9fc, #eef1f6);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  padding: 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+
+/* effetto hover */
+.parlamento-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  border-color: #2e4a7d;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+}
+
+/* titolo legislatura */
+.parlamento-btn h4 {
+  margin: 0;
+  color: #2e4a7d;
+  font-size: 15px;
+}
+
+/* info sotto */
+.parlamento-btn small {
+  color: #555;
+  font-size: 12px;
+}
+
+/* effetto click */
+.parlamento-btn:active {
+  transform: scale(0.98);
+}
+
+/* effetto glow elegante */
+.parlamento-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, rgba(46,74,125,0.15), transparent 60%);
+  opacity: 0;
+  transition: 0.3s;
+}
+
+.parlamento-btn:hover::after {
+  opacity: 1;
+}
 
 #confermaCoalizione {
   background: linear-gradient(90deg, #2e4a7d, #1f345a);

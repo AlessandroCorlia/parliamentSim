@@ -93,6 +93,100 @@
           "percentuale": 4
         }
       ]
-    }
+    },
+    {
+      "id": "italia_2013",
+      "nome": "Italia 2013",
+      "legislatura": 17,
+      "descrizione": "Elezioni politiche 2013",
+      "partiti": [
+        {
+          "nome": "Partito Democratico",
+          "colore": "#e31e24",
+          "ideologia": "sinistra",
+          "percentuale": 25
+        },
+        {
+          "nome": "Movimento 5 Stelle",
+          "colore": "#f4d03f",
+          "ideologia": "centro",
+          "percentuale": 25
+        },
+        {
+          "nome": "Altri",
+          "colore": "#888888",
+          "ideologia": "centro",
+          "percentuale": 12
+        },
+        {
+          "nome": "Forza Italia / PdL",
+          "colore": "#2e86de",
+          "ideologia": "centro",
+          "percentuale": 22
+        },
+        {
+          "nome": "Lega",
+          "colore": "#1b8f3a",
+          "ideologia": "destra",
+          "percentuale": 4
+        },
+        {
+          "nome": "Fratelli d'Italia",
+          "colore": "#0a3d91",
+          "ideologia": "destra",
+          "percentuale": 3
+        },
+        {
+          "nome": "Scelta Civica",
+          "colore": "#ff7f50",
+          "ideologia": "centro",
+          "percentuale": 9
+        }
+      ]
+    },     
+    {
+      "id": "italia_2008",
+      "nome": "Italia 2008",
+      "legislatura": 16,
+      "descrizione": "Elezioni politiche 2008",
+      "partiti": [
+        {
+          "nome": "Partito Democratico",
+          "colore": "#e31e24",
+          "ideologia": "sinistra",
+          "percentuale": 33
+        },
+        {
+          "nome": "Popolo della Libertà",
+          "colore": "#2e86de",
+          "ideologia": "destra",
+          "percentuale": 37
+        },
+        {
+          "nome": "Lega Nord",
+          "colore": "#1b8f3a",
+          "ideologia": "destra",
+          "percentuale": 8
+        },
+        {
+          "nome": "Italia dei Valori",
+          "colore": "#f4d03f",
+          "ideologia": "centro",
+          "percentuale": 4
+        },
+        {
+          "nome": "Unione di Centro",
+          "colore": "#ff7f50",
+          "ideologia": "centro",
+          "percentuale": 6
+        },
+        {
+          "nome": "Altri",
+          "colore": "#888888",
+          "ideologia": "centro",
+          "percentuale": 12
+        }
+      ]
+    }   
   ]
 }

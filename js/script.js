@@ -21,11 +21,6 @@ const btnCoalizione = document.getElementById('btnCoalizione');
 const presidenteDiv = document.getElementById('presidente');
 const pdcDiv = document.getElementById('pdcDiv');
 const percentualeDiv = document.getElementById('percentuale-riempimento');
-const coalizioneContainer = document.getElementById('coalizioneContainer');
-const coalizioneForm = document.getElementById('coalizioneForm');
-const coalTot = document.getElementById('coalTot');
-const confermaCoalizione = document.getElementById('confermaCoalizione');
-const annullaCoalizione = document.getElementById('annullaCoalizione');
 const btnDimissioni = document.getElementById("btnDimissioni");
 const btnGestioneMaggioranza = document.getElementById("btnGestioneMaggioranza");
 
@@ -449,11 +444,88 @@ function aggiornaPresidente(){
 }
 
 /* --- COALIZIONE (GESTITA DALL'UTENTE) --- */
-function mostraCoalizione(){
-  coalizioneForm.innerHTML = '';
-  coalioneCreateInputs();
-  coalizioneContainer.style.display = 'block';
-  aggiornaTotaleCoalizione();
+function mostraCoalizione() {
+  return new Promise(resolve => {
+
+    confermaTitolo.textContent = "🤝 Seleziona Coalizione";
+
+    // costruisco HTML dinamico
+    let html = `<div style="max-height:300px; overflow-y:auto;">`;
+
+    partiti.forEach(p => {
+      const checked = coalizioneMaggioranza.some(c => c.nome === p.nome) ? "checked" : "";
+
+      html += `
+        <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
+          <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
+          <label style="flex:1;">${p.nome} (${p.ideologia})</label>
+          <input type="checkbox" value="${p.nome}" ${checked}>
+        </div>
+      `;
+    });
+
+    html += `<p id="coalTot" style="margin-top:10px; font-weight:bold;"></p>`;
+    html += `</div>`;
+
+    confermaTesto.innerHTML = html;
+    modalConferma.style.display = "block";
+
+    const aggiornaTot = () => {
+      const checkboxes = modalConferma.querySelectorAll('input[type="checkbox"]');
+      let seggiTotali = 0;
+
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          const p = partiti.find(x => x.nome === cb.value);
+          if (p) seggiTotali += Math.round(p.percentuale / 100 * SEGGI_TOTALI);
+        }
+      });
+
+      const coalTotEl = document.getElementById("coalTot");
+
+      if (seggiTotali >= SEGGI_TOTALI / 2 + 1) {
+        coalTotEl.style.color = '#1f7a1f';
+        coalTotEl.textContent = `✅ Maggioranza (${seggiTotali} seggi)`;
+      } else {
+        coalTotEl.style.color = '#b30000';
+        coalTotEl.textContent = `❌ Nessuna maggioranza (${seggiTotali} seggi)`;
+      }
+    };
+
+    // listener checkbox
+    setTimeout(() => {
+      modalConferma.querySelectorAll('input[type="checkbox"]')
+        .forEach(cb => cb.addEventListener('change', aggiornaTot));
+      aggiornaTot();
+    }, 0);
+
+    btnConfermaSi.onclick = () => {
+      const checked = [...modalConferma.querySelectorAll('input[type="checkbox"]:checked')]
+        .map(cb => cb.value);
+
+      if (checked.length === 0) {
+        alert("Seleziona almeno un partito.");
+        return;
+      }
+
+      coalizioneMaggioranza = partiti.filter(p => checked.includes(p.nome));
+      localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
+
+      modalConferma.style.display = "none";
+
+      btnCoalizione.style.display = 'none';
+      btnPdC.style.display = 'block';
+
+      aggiornaUI();
+      resolve(true);
+    };
+
+    btnConfermaNo.onclick = () => {
+      modalConferma.style.display = "none";
+      resolve(false);
+    };
+
+  });
 }
 
 function coalioneCreateInputs() {
@@ -506,24 +578,6 @@ function aggiornaTotaleCoalizione() {
     coalTot.textContent = `⚠️ Coalizione senza maggioranza (${seggiTotali} seggi su ${SEGGI_TOTALI})`;
   }
 }
-
-/* conferma/annulla coalizione */
-confermaCoalizione.addEventListener('click', ()=>{
-  const checked = [...coalizioneForm.querySelectorAll('input[type="checkbox"]:checked')].map(cb=>cb.value);
-  coalizioneMaggioranza = partiti.filter(p => checked.includes(p.nome));
-  if(coalizioneMaggioranza.length===0) return alert("Seleziona almeno un partito per la maggioranza.");
-  // salvo
-  localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
-  coalizioneContainer.style.display='none';
-  // mostro il bottone PdC
-  btnCoalizione.style.display='none';
-  btnPdC.style.display='block';
-  aggiornaUI();
-});
-
-annullaCoalizione.addEventListener('click', ()=>{
-  coalizioneContainer.style.display='none';
-});
 
 /* nomina PdC basata sulla coalizione */
 function nominaPdC() {

@@ -400,14 +400,14 @@ function caricaParlamento(p) {
     `${p.nome} è stato caricato con successo`
   );
 }
-
+//Aggiunta eventi a modali
 btnVota.addEventListener('click', simulaVotoPresidente);
 btnCoalizione.addEventListener('click', mostraCoalizione);
 btnPdC.addEventListener('click', nominaPdC);
 btnReset.addEventListener('click', async ()=>{const conferma = await mostraConferma("⚠️ Scioglimento Parlamento", `Vuoi sciogliere il Parlamento? Verranno indette nuove elezioni.`); 
 if(!conferma) return;  partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
 btnDimissioni.addEventListener("click", dimissioniPremier);
-
+btnGestioneMaggioranza.addEventListener("click", mostraGestioneMaggioranza);
 function scegliPresidente(){
   const dati=assegnaSeggi();
   const total = dati.reduce((s,p)=>s+p.seggi,0);
@@ -415,6 +415,99 @@ function scegliPresidente(){
   let rand=Math.random()*total;
   for(const p of dati){ if(rand<p.seggi) return p; rand-=p.seggi; }
   return dati[dati.length-1];
+}
+function mostraGestioneMaggioranza() {
+  return new Promise(resolve => {
+
+    confermaTitolo.textContent = "⚙️ Gestione Maggioranza";
+
+    // PARTITI IN MAGGIORANZA
+    let html = `<h4>➖ Rimuovi dalla maggioranza</h4>`;
+    html += `<div style="margin-bottom:10px;">`;
+
+    if (coalizioneMaggioranza.length === 0) {
+      html += `<p>Nessun partito in maggioranza</p>`;
+    } else {
+      coalizioneMaggioranza.forEach(p => {
+        html += `
+          <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
+            <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
+            <label style="flex:1;">${p.nome}</label>
+            <input type="radio" name="azioneCoalizione" value="remove-${p.nome}">
+          </div>
+        `;
+      });
+    }
+
+    html += `</div>`;
+
+    // PARTITI FUORI MAGGIORANZA
+    html += `<h4>➕ Aggiungi alla maggioranza</h4>`;
+    html += `<div>`;
+
+    const fuori = partiti.filter(p => !coalizioneMaggioranza.some(c => c.nome === p.nome));
+
+    if (fuori.length === 0) {
+      html += `<p>Tutti i partiti sono già nella maggioranza</p>`;
+    } else {
+      fuori.forEach(p => {
+        html += `
+          <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
+            <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
+            <label style="flex:1;">${p.nome}</label>
+            <input type="radio" name="azioneCoalizione" value="add-${p.nome}">
+          </div>
+        `;
+      });
+    }
+
+    html += `</div>`;
+
+    confermaTesto.innerHTML = html;
+    modalConferma.style.display = "block";
+
+    // CONFERMA
+    btnConfermaSi.onclick = () => {
+      const scelta = document.querySelector('input[name="azioneCoalizione"]:checked');
+
+      if (!scelta) {
+        alert("Seleziona un'azione.");
+        return;
+      }
+
+      const [azione, nomePartito] = scelta.value.split("-");
+
+      if (azione === "remove") {
+        rimuoviDaMaggioranza(nomePartito);
+
+        mostraRisultato(
+          "➖ Partito rimosso",
+          `${nomePartito} è uscito dalla maggioranza`
+        );
+
+      } else if (azione === "add") {
+        aggiungiAMaggioranza(nomePartito);
+
+        mostraRisultato(
+          "➕ Partito aggiunto",
+          `${nomePartito} è entrato nella maggioranza`
+        );
+
+        // 👉 aggiorno fiducia anche quando entra
+        setTimeout(() => {
+          simulaVotazione({ tipo: "fiducia" });
+        }, 500);
+      }
+
+      modalConferma.style.display = "none";
+      resolve(true);
+    };
+
+    btnConfermaNo.onclick = () => {
+      modalConferma.style.display = "none";
+      resolve(false);
+    };
+  });
 }
 
 async function simulaVotoPresidente(){

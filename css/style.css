@@ -78,9 +78,74 @@
   }
 
   .colore-box { width: 20px; height: 20px; border-radius: 50%; margin-right: 8px; }
-  .partito-box { display:flex; align-items:center; justify-content:space-between; background:#f4f6f8; padding:6px 10px; border-radius:6px; margin-bottom:5px; }
   .partito-info { display:flex; align-items:center; gap:5px; }
-  .partito-btns button { margin-left:4px; padding:4px 6px; font-size:11px; }
+  .partito-btns {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* stile base */
+.partito-btns button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  font-size: 14px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* modifica (matita) */
+.partito-btns button:first-child {
+  background: #2e4a7d;
+}
+
+.partito-btns button:first-child:hover {
+  background: #3f66a8;
+  transform: scale(1.1);
+}
+
+/* elimina (X) */
+.partito-btns button:last-child {
+  background: rgb(0, 0, 0);
+}
+
+.partito-btns button:last-child:hover {
+  background: rgb(255, 0, 0);
+  transform: scale(1.1);
+}
+
+.partito-box {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  background:#f4f6f8;
+  padding:8px 12px;
+  border-radius:8px;
+  margin-bottom:6px;
+}
+.partito-info {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* spazio uniforme */
+  flex: 1;
+}
+.colore-box {
+  width: 16px;
+  height: 16px;
+  min-width: 16px; /* 👈 evita deformazioni */
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 0 0 1px #ccc; /* bordo elegante */
+}
+.partito-info span {
+  font-size: 13px;
+  line-height: 1.2;
+}
 
   #percentuale-riempimento { text-align:center; font-weight:bold; margin-top:10px; }
 
@@ -105,7 +170,7 @@
 
   #btnVota, #btnReset, #btnPdC, #btnCoalizione {
     display:none;
-    margin-top:20px;
+    margin-top:0px;
     padding:14px 26px;
     font-size:16px;
     font-weight:600;
@@ -305,6 +370,14 @@
   transition: 0.25s;
   position: relative;
   overflow: hidden;
+}
+.no-azioni-msg {
+  display: none;
+  text-align: center;
+  font-style: italic;
+  color: #777;
+  margin-top: 8px;
+  font-size: 0.9em;
 }
 
 /* effetto hover */
@@ -579,14 +652,16 @@
   flex-direction:column;
   gap:10px;
   border-radius:16px 0 0 16px;
+  overflow-y: auto;
 }
 
 #azioni h2 {
+  font-size:20px;
   text-align:center;
+  margin-bottom:20px;
   color:#2e4a7d;
   border-bottom:2px solid #d1a654;
   padding-bottom:8px;
-  margin-bottom:10px;
 }
 
 /* blocchi */
@@ -597,7 +672,7 @@
   box-shadow:0 2px 6px rgba(0,0,0,0.08);
   display:flex;
   flex-direction:column;
-  gap:8px;
+  gap:12px;
 }
 
 /* titoli piccoli */

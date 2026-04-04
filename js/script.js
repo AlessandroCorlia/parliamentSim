@@ -9,6 +9,7 @@ let deputati = JSON.parse(localStorage.getItem("deputati")) || null;
 let editingIndex = null;
 let databaseNomi = null;
 let legislatura = parseInt(localStorage.getItem('legislatura')) || 1;
+
 //DICHIARAZIONE ELEMENTI HTML
 const form = document.getElementById('partitoForm');
 const parlamento = document.getElementById('parlamento');
@@ -26,6 +27,7 @@ const coalTot = document.getElementById('coalTot');
 const confermaCoalizione = document.getElementById('confermaCoalizione');
 const annullaCoalizione = document.getElementById('annullaCoalizione');
 const btnDimissioni = document.getElementById("btnDimissioni");
+const btnGestioneMaggioranza = document.getElementById("btnGestioneMaggioranza");
 
 const editFormContainer = document.getElementById('editFormContainer');
 const editForm = document.getElementById('editForm');
@@ -65,6 +67,37 @@ function toRoman(num){
 const titoloParlamento = document.getElementById('titoloParlamento');
 function updateTitle(){
   titoloParlamento.textContent = `Il Tuo Parlamento - Legislatura ${toRoman(legislatura)}`;
+}
+function getMessaggioPerBlocco(titolo) {
+  if (titolo.includes("Parlamento")) return "⚖️ Nessuna azione parlamentare disponibile";
+  if (titolo.includes("Coalizione")) return "🤝 Nessuna maggioranza attiva";
+  if (titolo.includes("Legislativa")) return "📜 Nessuna proposta di legge";
+  if (titolo.includes("Governo")) return "🏛️ Nessun governo in carica";
+
+  return "😴 Nulla da fare...";
+}
+function controllaBlocchiAzioni() {
+  const blocchi = document.querySelectorAll(".azione-blocco");
+
+  blocchi.forEach(blocco => {
+    const bottoni = blocco.querySelectorAll("button");
+    const msgDiv = blocco.querySelector(".no-azioni-msg");
+
+    let visibili = 0;
+
+    bottoni.forEach(btn => {
+      const style = window.getComputedStyle(btn);
+      if (style.display !== "none") visibili++;
+    });
+
+    if (visibili === 0) {
+      const titolo = blocco.querySelector("h4").textContent;
+      msgDiv.textContent = getMessaggioPerBlocco(titolo);
+      msgDiv.style.display = "block";
+    } else {
+      msgDiv.style.display = "none";
+    }
+  });
 }
 /*
 function render(){
@@ -181,7 +214,7 @@ function aggiornaUI(){
     const testo=document.createElement('span');
     // se il partito è nella coalizione, aggiungo (Maggioranza) per chiarezza
     const inMaj = coalizioneMaggioranza.find(c=>c.nome===p.nome);
-    testo.textContent=`${p.nome} (${p.percentuale}%) - ${p.ideologia} - ${p.seggi} seggi${inMaj ? ' M' : ''}`;
+    testo.textContent=`${p.nome} (${p.percentuale}%) - ${p.ideologia} - ${p.seggi} seggi${inMaj ? ' - ✅' : ' - ❌'}`;
     info.appendChild(colore); info.appendChild(testo);
 
     const btns=document.createElement('div'); btns.className='partito-btns';
@@ -228,6 +261,9 @@ function aggiornaUI(){
   if (presidenteConsiglio && partiti.reduce((s,p)=>s+p.percentuale,0) === 100) { btnLegge.style.display = "inline-block"; } else {btnLegge.style.display = "none";}
   // reset button visibile quando parlamento pieno
   if(totPerc===100) btnReset.style.display='block'; else btnReset.style.display='none';
+  // mostra il bottone solo se esiste una vera maggioranza
+  if (coalizioneMaggioranza.length > 0 && haMaggioranza()) { btnGestioneMaggioranza.style.display = "block"; } else { btnGestioneMaggioranza.style.display = "none";}
+  controllaBlocchiAzioni();
 }
 
 function disegnaParlamento(){

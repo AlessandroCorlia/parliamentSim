@@ -7,6 +7,12 @@
       "descrizione": "Elezioni politiche 2022",
       "partiti": [
         {
+          "nome": "Alleanza Verdi-Sinistra",
+          "colore": "#14d928",
+          "ideologia": "sinistra",
+          "percentuale": 1
+        },
+        {
           "nome": "Partito Democratico",
           "colore": "#e31e24",
           "ideologia": "sinistra",
@@ -15,8 +21,8 @@
         {
           "nome": "Movimento 5 Stelle",
           "colore": "#f4d03f",
-          "ideologia": "centro",
-          "percentuale": 15
+          "ideologia": "sinistra",
+          "percentuale": 14
         },
         {
           "nome": "Azione - Italia Viva",
@@ -25,28 +31,34 @@
           "percentuale": 8
         },
         {
-          "nome": "Altri",
+          "nome": "Gruppo Misto",
           "colore": "#888888",
           "ideologia": "centro",
-          "percentuale": 15
+          "percentuale": 2
+        },
+        {
+            "nome":"Noi Moderati",
+            "colore": "#004A99",
+            "ideologia": "centro",
+            "percentuale": 4
         },
         {
           "nome": "Forza Italia",
           "colore": "#2e86de",
           "ideologia": "centro",
-          "percentuale": 8
+          "percentuale": 12
         },
         {
           "nome": "Lega",
           "colore": "#1b8f3a",
           "ideologia": "destra",
-          "percentuale": 9
+          "percentuale": 13
         },
         {
           "nome": "Fratelli d'Italia",
           "colore": "#0a3d91",
           "ideologia": "destra",
-          "percentuale": 26
+          "percentuale": 27
         }
       ]
     },
@@ -57,41 +69,59 @@
       "descrizione": "Elezioni politiche 2018",
       "partiti": [
         {
+          "nome": "Liberi e Uguali",
+          "colore": "#a61c3c",
+          "ideologia": "sinistra",
+          "percentuale": 2
+        },
+        {
           "nome": "Partito Democratico",
           "colore": "#e31e24",
           "ideologia": "sinistra",
-          "percentuale": 19
+          "percentuale": 18
+        },
+        {
+          "nome": "+Europa",
+          "colore": "#ff66cc",
+          "ideologia": "centro",
+          "percentuale": 1
         },
         {
           "nome": "Movimento 5 Stelle",
           "colore": "#f4d03f",
           "ideologia": "centro",
-          "percentuale": 33
+          "percentuale": 36
         },
         {
-          "nome": "Altri",
-          "colore": "#888888",
+          "nome": "SVP - PATT",
+          "colore": "#27ae60",
           "ideologia": "centro",
-          "percentuale": 13
+          "percentuale": 1
+        },
+        {
+          "nome": "Noi con l'Italia - UDC",
+          "colore": "#004A99",
+          "ideologia": "centro",
+          "percentuale": 1
         },
         {
           "nome": "Forza Italia",
           "colore": "#2e86de",
           "ideologia": "centro",
-          "percentuale": 14
+          "percentuale": 16
         },
         {
           "nome": "Lega",
           "colore": "#1b8f3a",
           "ideologia": "destra",
-          "percentuale": 17
+          "percentuale": 20
         },
         {
           "nome": "Fratelli d'Italia",
           "colore": "#0a3d91",
           "ideologia": "destra",
-          "percentuale": 4
-        }
+          "percentuale": 5
+        }        
       ]
     },
     {
@@ -104,43 +134,75 @@
           "nome": "Partito Democratico",
           "colore": "#e31e24",
           "ideologia": "sinistra",
-          "percentuale": 25
+          "percentuale": 39
+        },
+        {
+          "nome": "MDP - Liberi e Uguali",
+          "colore": "#a61c3c",
+          "ideologia": "sinistra",
+          "percentuale": 7
+        },
+        {
+          "nome": "Sinistra Italiana / SEL",
+          "colore": "#c0392b",
+          "ideologia": "sinistra",
+          "percentuale": 4
+        },
+      
+        {
+          "nome": "Scelta Civica",
+          "colore": "#ff7f50",
+          "ideologia": "centro",
+          "percentuale": 4
+        },
+        {
+          "nome": "Area Popolare (NCD-UDC)",
+          "colore": "#f39c12",
+          "ideologia": "centro",
+          "percentuale": 4
+        },
+        {
+          "nome": "NcI - MAIE",
+          "colore": "#d35400",
+          "ideologia": "centro",
+          "percentuale": 2
+        },
+        {
+          "nome": "Centro Democratico",
+          "colore": "#e67e22",
+          "ideologia": "centro",
+          "percentuale": 2
+        },
+        {
+          "nome": "Gruppo Misto",
+          "colore": "#888888",
+          "ideologia": "centro",
+          "percentuale": 10
         },
         {
           "nome": "Movimento 5 Stelle",
           "colore": "#f4d03f",
           "ideologia": "centro",
-          "percentuale": 25
-        },
-        {
-          "nome": "Altri",
-          "colore": "#888888",
-          "ideologia": "centro",
-          "percentuale": 12
+          "percentuale": 14
         },
         {
           "nome": "Forza Italia / PdL",
           "colore": "#2e86de",
           "ideologia": "centro",
-          "percentuale": 22
+          "percentuale": 9
         },
+      
         {
           "nome": "Lega",
           "colore": "#1b8f3a",
           "ideologia": "destra",
-          "percentuale": 4
+          "percentuale": 3
         },
         {
           "nome": "Fratelli d'Italia",
           "colore": "#0a3d91",
           "ideologia": "destra",
-          "percentuale": 3
-        },
-        {
-          "nome": "Scelta Civica",
-          "colore": "#ff7f50",
-          "ideologia": "centro",
-          "percentuale": 9
+          "percentuale": 2
         }
       ]
     },     
@@ -154,19 +216,70 @@
           "nome": "Partito Democratico",
           "colore": "#e31e24",
           "ideologia": "sinistra",
-          "percentuale": 33
+          "percentuale": 40
+        },
+      
+        {
+          "nome": "Italia dei Valori",
+          "colore": "#f4d03f",
+          "ideologia": "centro",
+          "percentuale": 2
         },
         {
-          "nome": "Popolo della Libertà",
-          "colore": "#2e86de",
-          "ideologia": "destra",
-          "percentuale": 37
+          "nome": "Unione di Centro",
+          "colore": "#ff7f50",
+          "ideologia": "centro",
+          "percentuale": 6
+        },
+        {
+          "nome": "Futuro e Libertà",
+          "colore": "#3498db",
+          "ideologia": "centro",
+          "percentuale": 4
         },
         {
           "nome": "Lega Nord",
           "colore": "#1b8f3a",
           "ideologia": "destra",
+          "percentuale": 9
+        },
+        {
+          "nome": "Popolo della Libertà",
+          "colore": "#2e86de",
+          "ideologia": "destra",
+          "percentuale": 39
+        }
+      ]
+    },
+    {
+      "id": "italia_2006",
+      "nome": "Italia 2006",
+      "legislatura": 15,
+      "descrizione": "Distribuzione percentuale arrotondata su 400 seggi",
+      "partiti": [
+        {
+          "nome": "Rifondazione Comunista",
+          "colore": "#ff0000",
+          "ideologia": "sinistra",
           "percentuale": 8
+        },
+        {
+          "nome": "Partito dei Comunisti Italiani",
+          "colore": "#a10505",
+          "ideologia": "sinistra",
+          "percentuale": 4
+        },
+        {
+          "nome": "Socialisti Democratici",
+          "colore": "#c0392b",
+          "ideologia": "sinistra",
+          "percentuale": 4
+        },
+        {
+          "nome": "L'Ulivo (centrosinistra)",
+          "colore": "#ff8000",
+          "ideologia": "sinistra",
+          "percentuale": 34
         },
         {
           "nome": "Italia dei Valori",
@@ -178,15 +291,27 @@
           "nome": "Unione di Centro",
           "colore": "#ff7f50",
           "ideologia": "centro",
-          "percentuale": 6
+          "percentuale": 7
         },
         {
-          "nome": "Altri",
-          "colore": "#888888",
-          "ideologia": "centro",
+          "nome": "Lega Nord",
+          "colore": "#1b8f3a",
+          "ideologia": "destra",
+          "percentuale": 5
+        },
+        {
+          "nome": "Forza Italia",
+          "colore": "#2e86de",
+          "ideologia": "destra",
+          "percentuale": 22
+        },
+        {
+          "nome": "Alleanza Nazionale",
+          "colore": "#34495e",
+          "ideologia": "destra",
           "percentuale": 12
         }
       ]
-    }   
+    }
   ]
 }

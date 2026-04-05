@@ -557,9 +557,8 @@ function mostraCoalizione() {
       `;
     });
 
-    html += `<p id="coalTot" style="margin-top:10px; font-weight:bold;"></p>`;
     html += `</div>`;
-
+    html += `<p id="coalTot" style="margin-top:10px; font-weight:bold;"></p>`;
     confermaTesto.innerHTML = html;
     modalConferma.style.display = "block";
 

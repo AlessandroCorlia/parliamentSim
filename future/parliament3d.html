@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <title>Parlamento 3D</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #111;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Three.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+// SCENA
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x111111);
+
+// CAMERA
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+camera.position.set(0, 12, 20);
+camera.lookAt(0, 0, 0);
+
+// RENDERER
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+// LUCI
+const luce = new THREE.DirectionalLight(0xffffff, 1);
+luce.position.set(10, 20, 10);
+scene.add(luce);
+
+const luceAmbient = new THREE.AmbientLight(0x404040);
+scene.add(luceAmbient);
+
+// PARAMETRI
+const SEGGI_TOTALI = 400;
+const RIGHE = 6;
+const raggioMax = 10;
+const step = 1.2;
+
+// COLORI PARTITI (casuali)
+const colori = [
+  0xff4444,
+  0x4444ff,
+  0x44ff44,
+  0xffff44,
+  0xff44ff
+];
+
+// CREAZIONE PARLAMENTO
+let startAngle = Math.PI;
+
+for (let p = 0; p < colori.length; p++) {
+
+  const seggiPartito = Math.floor(SEGGI_TOTALI / colori.length);
+  const angleSpan = Math.PI * (seggiPartito / SEGGI_TOTALI);
+
+  for (let row = 0; row < RIGHE; row++) {
+
+    const raggio = raggioMax - row * step;
+    const seggiPerRiga = Math.floor(seggiPartito / RIGHE);
+
+    for (let i = 0; i < seggiPerRiga; i++) {
+
+      const frazione = i / seggiPerRiga;
+      const angolo = startAngle + angleSpan * frazione;
+
+      const x = Math.cos(angolo) * raggio;
+      const z = Math.sin(angolo) * raggio;
+      const y = row * 0.6;
+
+      const geometry = new THREE.SphereGeometry(0.25, 12, 12);
+      const material = new THREE.MeshStandardMaterial({ color: colori[p] });
+
+      const deputato = new THREE.Mesh(geometry, material);
+      deputato.position.set(x, y, z);
+
+      scene.add(deputato);
+    }
+  }
+
+  startAngle += angleSpan;
+}
+
+// PAVIMENTO
+const floorGeometry = new THREE.CircleGeometry(12, 64);
+const floorMaterial = new THREE.MeshStandardMaterial({
+  color: 0x222222,
+  side: THREE.DoubleSide
+});
+
+const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+floor.rotation.x = -Math.PI / 2;
+scene.add(floor);
+
+// ANIMAZIONE
+function animate() {
+  requestAnimationFrame(animate);
+
+  // rotazione lenta
+  scene.rotation.y += 0.002;
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+// RESIZE
+window.addEventListener("resize", () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+
+</body>
+</html>

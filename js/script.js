@@ -1168,43 +1168,70 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
   const approvato = favorevoli >= soglia;
   if (tipo === "sfiducia") {
 
+  const soglia = Math.floor(SEGGI_TOTALI / 2) + 1;
+  const percentFav = ((favorevoli / SEGGI_TOTALI) * 100).toFixed(1);
+  const percentContr = ((contrari / SEGGI_TOTALI) * 100).toFixed(1);
+  const percentAst = ((astenuti / SEGGI_TOTALI) * 100).toFixed(1);
+
   if (approvato) {
-  const nomePdC = presidenteConsiglio?.nome;
+    const nomePdC = presidenteConsiglio?.nome;
+    const scarto = favorevoli - soglia;
 
-  presidenteConsiglio = null;
-  coalizioneMaggioranza = [];
+    presidenteConsiglio = null;
+    coalizioneMaggioranza = [];
 
-  localStorage.removeItem("presidenteConsiglio");
-  localStorage.removeItem("coalizioneMaggioranza");
+    localStorage.removeItem("presidenteConsiglio");
+    localStorage.removeItem("coalizioneMaggioranza");
 
-  aggiornaPdC();
-  aggiornaUI();
+    aggiornaPdC();
+    aggiornaUI();
 
-  mostraRisultato("💥 Governo caduto", `La mozione di sfiducia è stata <strong>approvata</strong>.
+    mostraRisultato(
+      "💥 Governo caduto",
+      `La mozione di sfiducia è stata <strong>approvata</strong>.
+
 <p>
-Favorevoli: ${favorevoli}
-Contrari: ${contrari}
-Astenuti: ${astenuti}
+📊 <strong>RISULTATO VOTAZIONE</strong><br>
+Favorevoli: ${favorevoli} (${percentFav}%)<br>
+Contrari: ${contrari} (${percentContr}%)<br>
+Astenuti: ${astenuti} (${percentAst}%)
 </p>
+
+<p>
+🎯 Maggioranza richiesta: ${soglia} voti<br>
+📈 Scarto: +${scarto} voti
+</p>
+
 Il governo dell'<strong>${nomePdC}</strong> è caduto.`
-  );
+    );
 
-  btnCoalizione.style.display = "block";
-  btnPdC.style.display = "none";
-  btnLegge.style.display = "none";
+    btnCoalizione.style.display = "block";
+    btnPdC.style.display = "none";
+    btnLegge.style.display = "none";
 
-} else {
-  mostraRisultato(
-    "🛡️ Governo salvo",
-    `La mozione di sfiducia è stata respinta.
+  } else {
 
-Favorevoli: ${favorevoli}
-Contrari: ${contrari}
-Astenuti: ${astenuti}`
-  );
-}
+    const scartoNo = soglia - favorevoli;
+
+    mostraRisultato(
+      "🛡️ Governo salvo",
+      `La mozione di sfiducia è stata <strong>respinta</strong>.
+
+<p>
+📊 <strong>RISULTATO VOTAZIONE</strong><br>
+Favorevoli: <strong>${favorevoli}</strong> (${percentFav}%)<br>
+Contrari: <strong>${contrari}</strong> (${percentContr}%)<br>
+Astenuti: <strong>${astenuti}</strong> (${percentAst}%)
+</p>
+
+<p>
+🎯 Maggioranza richiesta: <strong>${soglia} voti</strong><br>
+📉 Scarto: <strong>${scartoNo}</strong> voti per approvare
+</p>`
+    );
+  }
+
   disegnaParlamento();
-
   return; 
 }
 
@@ -1217,12 +1244,48 @@ Astenuti: ${astenuti}`
   }
 
   // RISULTATO
-  mostraRisultato(
-    approvato ? "✅ Approvato" : "❌ Respinto",
-    `Favorevoli: ${favorevoli}
-     Contrari: ${contrari}
-     Astenuti: ${astenuti}`
-  );
+  // CALCOLI EXTRA
+const percentFav = ((favorevoli / SEGGI_TOTALI) * 100).toFixed(1);
+const percentContr = ((contrari / SEGGI_TOTALI) * 100).toFixed(1);
+const percentAst = ((astenuti / SEGGI_TOTALI) * 100).toFixed(1);
+
+const scarto = approvato 
+  ? (favorevoli - soglia) 
+  : (soglia - favorevoli);
+
+// TITOLI DINAMICI
+let titoloRisultato = "";
+let intestazione = "";
+
+if (tipo === "fiducia") {
+  titoloRisultato = approvato ? "🟢 Fiducia approvata" : "🔴 Crisi di Governo";
+  intestazione = "Voto di fiducia al Governo";
+}
+
+else if (tipo === "legge") {
+  titoloRisultato = approvato ? "📜 Legge approvata" : "❌ Legge respinta";
+  intestazione = titolo || "Disegno di legge";
+}
+
+// OUTPUT
+mostraRisultato(
+  titoloRisultato,
+  `<strong>${intestazione}</strong>
+
+<p>
+📊 <strong>RISULTATO VOTAZIONE</strong><br>
+Favorevoli: <strong>${favorevoli}</strong> (${percentFav}%)<br>
+Contrari: <strong>${contrari}</strong> (${percentContr}%)<br>
+Astenuti: <strong>${astenuti}</strong> (${percentAst}%)
+</p>
+
+<p>
+🎯 Maggioranza richiesta: <strong>${soglia} voti</strong><br>
+${approvato 
+  ? `📈 Scarto: <strong>+${scarto}</strong> voti` 
+  : `📉 Mancano: <strong>${scarto}</strong> voti`}
+</p>`
+);
 
   // AZIONI POST
   if (tipo === "fiducia") {

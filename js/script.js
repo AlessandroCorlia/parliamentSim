@@ -23,6 +23,7 @@ const pdcDiv = document.getElementById('pdcDiv');
 const percentualeDiv = document.getElementById('percentuale-riempimento');
 const btnDimissioni = document.getElementById("btnDimissioni");
 const btnGestioneMaggioranza = document.getElementById("btnGestioneMaggioranza");
+const btnSfiducia = document.getElementById("btnSfiducia");
 
 const editFormContainer = document.getElementById('editFormContainer');
 const editForm = document.getElementById('editForm');
@@ -258,6 +259,7 @@ function aggiornaUI(){
   if(totPerc===100) btnReset.style.display='block'; else btnReset.style.display='none';
   // mostra il bottone solo se esiste una vera maggioranza
   if (coalizioneMaggioranza.length > 0 && haMaggioranza()) { btnGestioneMaggioranza.style.display = "block"; } else { btnGestioneMaggioranza.style.display = "none";}
+  if (presidenteConsiglio) { btnSfiducia.style.display = "block"; } else { btnSfiducia.style.display = "none"; }
   controllaBlocchiAzioni();
 }
 
@@ -408,6 +410,35 @@ btnReset.addEventListener('click', async ()=>{const conferma = await mostraConfe
 if(!conferma) return;  partiti=[]; presidente=null; presidenteConsiglio=null; coalizioneMaggioranza=[]; legislatura++; localStorage.setItem('legislatura', legislatura); updateTitle(); salvaPartiti(); });
 btnDimissioni.addEventListener("click", dimissioniPremier);
 btnGestioneMaggioranza.addEventListener("click", mostraGestioneMaggioranza);
+btnSfiducia.addEventListener("click", async () => {
+  // lista partiti (meglio se opposizione)
+  let html = `<h4>Chi propone la sfiducia?</h4>`;
+  partiti.forEach(p => {
+    html += `
+      <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
+        <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
+        <label style="flex:1;">${p.nome}</label>
+        <input type="radio" name="sfiducia" value="${p.nome}">
+      </div>
+    `;
+  });
+  confermaTitolo.textContent = "🗳️ Mozione di Sfiducia";
+  confermaTesto.innerHTML = html;
+  modalConferma.style.display = "block";
+  btnConfermaSi.onclick = () => {
+    const scelta = document.querySelector('input[name="sfiducia"]:checked');
+    if (!scelta) return alert("Seleziona un partito");
+    modalConferma.style.display = "none";
+    simulaVotazione({
+      tipo: "sfiducia",
+      proponente: scelta.value
+    });
+  };
+  btnConfermaNo.onclick = () => {
+    modalConferma.style.display = "none";
+  };
+});
+
 function scegliPresidente(){
   const dati=assegnaSeggi();
   const total = dati.reduce((s,p)=>s+p.seggi,0);
@@ -979,7 +1010,7 @@ const btnConfermaNo = document.getElementById("btnConfermaNo");
 
 function mostraRisultato(titolo, testo) {
   modalTitolo.textContent = titolo;
-  modalTesto.textContent = testo;
+  modalTesto.innerHTML = testo;
   modal.style.display = "block";
 }
 
@@ -1093,7 +1124,31 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
         }
       }
     }
+    else if (tipo === "sfiducia") {
+      const èMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
+      const èProponente = partito.nome === proponente;
+      const proponenteObj = partiti.find(p => p.nome === proponente);
 
+      if (èProponente) {
+        voto = "si"; // chi propone vota sempre sì
+      }
+
+      else if (!èMaggioranza) {
+       // opposizione → tende a votare sì
+       if (partito.ideologia === proponenteObj.ideologia) {
+          voto = Math.random() < 0.85 ? "si" : "astenuto";
+        } else {
+          voto = Math.random() < 0.7 ? "si" : "no";
+       }
+      }
+
+
+      else {
+        // maggioranza → difende governo
+        voto = Math.random() < 0.85 ? "no" : "astenuto";
+      }
+    }  
+  
     // conteggio
     if (voto === "si") favorevoli++;
     else if (voto === "no") contrari++;
@@ -1111,6 +1166,47 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
 
   const soglia = Math.floor(SEGGI_TOTALI / 2) + 1;
   const approvato = favorevoli >= soglia;
+  if (tipo === "sfiducia") {
+
+  if (approvato) {
+  const nomePdC = presidenteConsiglio?.nome;
+
+  presidenteConsiglio = null;
+  coalizioneMaggioranza = [];
+
+  localStorage.removeItem("presidenteConsiglio");
+  localStorage.removeItem("coalizioneMaggioranza");
+
+  aggiornaPdC();
+  aggiornaUI();
+
+  mostraRisultato("💥 Governo caduto", `La mozione di sfiducia è stata <strong>approvata</strong>.
+<p>
+Favorevoli: ${favorevoli}
+Contrari: ${contrari}
+Astenuti: ${astenuti}
+</p>
+Il governo dell'<strong>${nomePdC}</strong> è caduto.`
+  );
+
+  btnCoalizione.style.display = "block";
+  btnPdC.style.display = "none";
+  btnLegge.style.display = "none";
+
+} else {
+  mostraRisultato(
+    "🛡️ Governo salvo",
+    `La mozione di sfiducia è stata respinta.
+
+Favorevoli: ${favorevoli}
+Contrari: ${contrari}
+Astenuti: ${astenuti}`
+  );
+}
+  disegnaParlamento();
+
+  return; 
+}
 
   // LAMPEGGIO FINALE
   for (let j = 0; j < 2; j++) {

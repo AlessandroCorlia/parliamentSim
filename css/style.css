@@ -707,3 +707,186 @@
     margin-top:10px;
   }
 }
+
+#landingScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: linear-gradient(135deg, #e9eaee 0%, #f7f8fa 100%);
+
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.landing-content {
+  width: 100%;
+  max-width: 900px;
+  text-align: center;
+}
+
+.landing-content h1 {
+  margin: 0;
+  color: #2e4a7d;
+  font-size: 42px;
+  font-weight: 700;
+}
+
+.landing-subtitle {
+  margin: 12px 0 35px;
+  color: #555;
+  font-size: 20px;
+}
+
+.landing-options {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 25px;
+}
+
+.landing-card {
+  background: #ffffff;
+
+  border-radius: 16px;
+  padding: 35px 30px;
+
+  box-shadow: 0 5px 18px rgba(0, 0, 0, 0.12);
+
+  border-top: 5px solid #d1a654;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.landing-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16);
+}
+
+.landing-icon {
+  font-size: 48px;
+  margin-bottom: 10px;
+}
+
+.landing-card h2 {
+  margin: 5px 0 12px;
+  color: #2e4a7d;
+  font-size: 23px;
+}
+
+.landing-card p {
+  min-height: 55px;
+
+  margin: 0 0 25px;
+
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.landing-card button {
+  width: 80%;
+
+  padding: 13px 20px;
+
+  background: linear-gradient(90deg, #2e4a7d, #1f345a);
+  color: white;
+
+  border: 2px solid #d1a654;
+  border-radius: 8px;
+
+  font-size: 15px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.landing-card button:hover {
+  transform: scale(1.03);
+  background: linear-gradient(90deg, #3a5fa2, #2e4a7d);
+}
+
+
+/* ---------------------------------------------------------
+   Quando la landing è attiva, nasconde l'applicazione
+   --------------------------------------------------------- */
+
+body.landing-active > div:not(#landingScreen) {
+  display: none;
+}
+
+
+/* ---------------------------------------------------------
+   Animazione ingresso
+   --------------------------------------------------------- */
+
+#landingScreen {
+  animation: landingFadeIn 0.35s ease;
+}
+
+@keyframes landingFadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   Mobile
+   --------------------------------------------------------- */
+
+@media (max-width: 768px) {
+
+  #landingScreen {
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .landing-content h1 {
+    font-size: 30px;
+  }
+
+  .landing-subtitle {
+    font-size: 17px;
+    margin-bottom: 25px;
+  }
+
+  .landing-options {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .landing-card {
+    padding: 25px 20px;
+  }
+
+  .landing-icon {
+    font-size: 40px;
+  }
+
+  .landing-card h2 {
+    font-size: 20px;
+  }
+
+  .landing-card p {
+    min-height: auto;
+  }
+
+  .landing-card button {
+    width: 100%;
+  }
+
+}

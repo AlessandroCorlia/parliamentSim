@@ -37,6 +37,53 @@ const btnArchivioLeggi = document.getElementById("btnArchivioLeggi");
 const archivioLeggiContainer = document.getElementById("archivioLeggi");
 const listaLeggi = document.getElementById("listaLeggi");
 const chiudiArchivio = document.getElementById("chiudiArchivio");
+//PAGINA INIZIALE
+const landingScreen = document.getElementById('landingScreen');
+const btnSimulaElezioni = document.getElementById('btnSimulaElezioni');
+const btnCostruisciParlamento = document.getElementById('btnCostruisciParlamento');
+const btnHome = document.getElementById('btnHome');
+// =========================================================
+// GESTIONE SCHERMATA INIZIALE
+// =========================================================
+
+function entraNelParlamento() {
+  document.body.classList.remove('landing-active');
+  localStorage.setItem('schermataAttiva', 'parlamento');
+
+  if (landingScreen) {
+    landingScreen.style.display = 'none';
+  }
+}
+
+
+
+// MODALITÀ MANUALE
+
+btnCostruisciParlamento.addEventListener('click', () => {
+  entraNelParlamento();
+});
+
+
+// MODALITÀ SIMULAZIONE ELETTORALE
+
+btnSimulaElezioni.addEventListener('click', () => {
+  alert("La simulazione elettorale sarà disponibile prossimamente.");
+});
+// Ripristina la schermata visualizzata prima del refresh
+if (localStorage.getItem('schermataAttiva') === 'parlamento') {
+  entraNelParlamento();
+}
+
+//TORNA ALLA HOME
+
+btnHome.addEventListener('click', () => {
+  document.body.classList.add('landing-active');
+  localStorage.setItem('schermataAttiva','iniziale');
+
+  if (landingScreen) {
+    landingScreen.style.display = 'flex';
+  }
+});
 
 /*
 const btnLegge = document.createElement("button");

@@ -7,9 +7,56 @@
 <link rel="stylesheet" href="css/style.css">
 <title>Create your own Parliament</title>
 </head>
-<body>
+<body class="landing-active">
+  <!-- SCHERMATA INIZIALE -->
+<div id="landingScreen">
+  <div class="landing-content">
+
+    <h1>Create your own Parliament</h1>
+    <p class="landing-subtitle">
+      Come vuoi creare il tuo Parlamento?
+    </p>
+
+    <div class="landing-options">
+
+      <div class="landing-card">
+        <div class="landing-icon">🗳️</div>
+
+        <h2>Simula le elezioni</h2>
+
+        <p>
+          Crea i partiti e lascia che il sistema simuli
+          il risultato delle elezioni politiche.
+        </p>
+
+        <button id="btnSimulaElezioni">
+          Simula le elezioni
+        </button>
+      </div>
+
+      <div class="landing-card">
+        <div class="landing-icon">🏛️</div>
+
+        <h2>Costruisci il Parlamento</h2>
+
+        <p>
+          Crea direttamente i partiti e assegna manualmente
+          la percentuale dei seggi.
+        </p>
+
+        <button id="btnCostruisciParlamento">
+          Costruisci il Parlamento
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+  
 <!--Colonna Gestione Partiti-->
 <div id="menu">
+  <button id="btnHome">🏠 Torna alla schermata iniziale</button>
   <h1>Gestione Partiti</h1>
   <form id="partitoForm">
     <input type="text" id="nome" placeholder="Nome partito" required>

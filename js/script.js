@@ -42,6 +42,21 @@ const landingScreen = document.getElementById('landingScreen');
 const btnSimulaElezioni = document.getElementById('btnSimulaElezioni');
 const btnCostruisciParlamento = document.getElementById('btnCostruisciParlamento');
 const btnHome = document.getElementById('btnHome');
+
+// =========================================================
+// UTILITY
+// =========================================================
+
+// Evita che nomi di partito con caratteri speciali (", <, >, &) rompano l'HTML generato
+function escapeHtml(str) {
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 // =========================================================
 // GESTIONE SCHERMATA INIZIALE
 // =========================================================
@@ -55,14 +70,11 @@ function entraNelParlamento() {
   }
 }
 
-
-
 // MODALITÀ MANUALE
 
 btnCostruisciParlamento.addEventListener('click', () => {
   entraNelParlamento();
 });
-
 
 // MODALITÀ SIMULAZIONE ELETTORALE
 
@@ -85,12 +97,6 @@ btnHome.addEventListener('click', () => {
   }
 });
 
-/*
-const btnLegge = document.createElement("button");
-btnLegge.id = "btnLegge";
-btnLegge.textContent = "📜 Proponi Disegno di Legge";
-document.getElementById("azioni").appendChild(btnLegge);
-*/
 const btnLegge = document.getElementById("btnLegge");
 function toRoman(num){
   const map = [
@@ -142,17 +148,8 @@ function controllaBlocchiAzioni() {
     }
   });
 }
-/*
-function render(){
-  aggiornaLegenda();
-  aggiornaPresidente();
-  aggiornaPdC();
-  disegnaParlamento();
-}
-*/
 
 aggiornaUI();
-//disegnaParlamento();
 aggiornaPresidente();
 aggiornaPdC();
 updateTitle();
@@ -175,9 +172,10 @@ fetch("data/names.json")
     disegnaParlamento();
   })
   .catch(err => console.error(err));
-  
+
+// index = indice GLOBALE del seggio (0..399): ogni seggio ha un nome diverso
 function generaNomeCasuale(index){
-  if (deputati && deputati[index]) return deputati[index];
+  if (deputati && deputati.length) return deputati[index % deputati.length];
   return "On. Deputato";
 }
 
@@ -218,14 +216,40 @@ function salvaPartiti(){
   aggiornaPdC();
 }
 
-function assegnaSeggi(){ return partiti.map(p=>({...p, seggi: Math.round(p.percentuale/100*SEGGI_TOTALI)})); }
+// Assegnazione seggi con metodo dei resti più alti:
+// a parlamento pieno (100%) la somma dei seggi è sempre esattamente SEGGI_TOTALI.
+function assegnaSeggi(){
+  const totPerc = partiti.reduce((s,p)=>s+p.percentuale,0);
+  const target = Math.round(totPerc / 100 * SEGGI_TOTALI);
+
+  const quote = partiti.map((p, i) => {
+    const esatto = p.percentuale / 100 * SEGGI_TOTALI;
+    return { i, base: Math.floor(esatto), resto: esatto - Math.floor(esatto) };
+  });
+
+  let assegnati = quote.reduce((s,q)=>s+q.base,0);
+  let mancanti = target - assegnati;
+
+  // distribuisco i seggi rimanenti ai partiti con il resto più alto
+  [...quote].sort((a,b)=>b.resto - a.resto).forEach(q => {
+    if (mancanti > 0) { q.base++; mancanti--; }
+  });
+
+  return partiti.map((p,i)=>({...p, seggi: quote[i].base}));
+}
+
+function seggiPartito(nome){
+  const p = assegnaSeggi().find(x => x.nome === nome);
+  return p ? p.seggi : 0;
+}
 
 function haMaggioranza() {
+  const dati = assegnaSeggi();
   let seggi = 0;
 
   coalizioneMaggioranza.forEach(c => {
-    const p = partiti.find(x => x.nome === c.nome);
-    if (p) seggi += Math.round(p.percentuale / 100 * SEGGI_TOTALI);
+    const p = dati.find(x => x.nome === c.nome);
+    if (p) seggi += p.seggi;
   });
 
   return seggi >= (SEGGI_TOTALI / 2 + 1);
@@ -315,37 +339,42 @@ function disegnaParlamento(){
   const dati=assegnaSeggi();
   const cx=400,cy=400,raggioMax=300,step=30; 
   let startAngle=Math.PI;
+  let indiceGlobale = 0; // indice progressivo del seggio in tutto il parlamento (nomi univoci)
+
   dati.forEach(p=>{
-    let currentSeggi=0;
     const angleSpan=Math.PI*(p.seggi/SEGGI_TOTALI);
-    for(let row=0;row<RIGHE;row++){
-      const raggio=raggioMax-row*step;
-      const seggiPerRiga = Math.max(1, Math.round(p.seggi/RIGHE));
-      for(let i=0;i<seggiPerRiga;i++){
-        const frazione = (seggiPerRiga===0)?0:(i/seggiPerRiga);
-        const angolo = startAngle + angleSpan*frazione;
-        const x = cx + raggio*Math.cos(angolo); 
-        const y = cy + raggio*Math.sin(angolo);
-        const cerchio = document.createElementNS('http://www.w3.org/2000/svg','circle');
-        cerchio.nomeDeputato = generaNomeCasuale(currentSeggi);
-        cerchio.setAttribute('cx',x); cerchio.setAttribute('cy',y); cerchio.setAttribute('r',5); 
-        // Se il partito è in maggioranza, colore normale, altrimenti colore schiarito
-        let coloreFinale = (coalizioneMaggioranza.some(c => c.nome === p.nome)) 
+    const coloreFinale = (coalizioneMaggioranza.some(c => c.nome === p.nome)) 
                    ? p.colore 
                    : schiarisciColore(p.colore, 0.55); // 55% più chiaro
-        cerchio.setAttribute('fill', coloreFinale);
-        // Bordo leggero per evidenziare maggioranza
-        parlamento.appendChild(cerchio);
-        //tooltip
-        cerchio.setAttribute('data-partito', p.nome);
-        cerchio.setAttribute('data-seggio', currentSeggi+1);
-        const title = document.createElementNS('http://www.w3.org/2000/svg','title');
-        title.textContent = `${cerchio.nomeDeputato} — ${p.nome}`;
-        cerchio.appendChild(title);
-        parlamento.appendChild(cerchio);
-        currentSeggi++; if(currentSeggi>=p.seggi) break;
+    let currentSeggi=0;
+
+    if (p.seggi > 0) {
+      for(let row=0;row<RIGHE;row++){
+        const raggio=raggioMax-row*step;
+        // distribuisco esattamente p.seggi sulle righe (nessun seggio in più o in meno)
+        const seggiPerRiga = Math.floor(p.seggi/RIGHE) + (row < p.seggi % RIGHE ? 1 : 0);
+        for(let i=0;i<seggiPerRiga;i++){
+          const frazione = i/seggiPerRiga;
+          const angolo = startAngle + angleSpan*frazione;
+          const x = cx + raggio*Math.cos(angolo); 
+          const y = cy + raggio*Math.sin(angolo);
+          const cerchio = document.createElementNS('http://www.w3.org/2000/svg','circle');
+          cerchio.nomeDeputato = generaNomeCasuale(indiceGlobale);
+          cerchio.setAttribute('cx',x); cerchio.setAttribute('cy',y); cerchio.setAttribute('r',5); 
+          cerchio.setAttribute('fill', coloreFinale);
+          //tooltip
+          cerchio.setAttribute('data-partito', p.nome);
+          cerchio.setAttribute('data-seggio', currentSeggi+1);
+          const title = document.createElementNS('http://www.w3.org/2000/svg','title');
+          title.textContent = `${cerchio.nomeDeputato} — ${p.nome}`;
+          cerchio.appendChild(title);
+          parlamento.appendChild(cerchio);
+          currentSeggi++;
+          indiceGlobale++;
+        }
       }
-    } startAngle+=angleSpan;
+    }
+    startAngle+=angleSpan;
   });
 
   if(presidente){
@@ -446,7 +475,7 @@ function caricaParlamento(p) {
   // feedback utente
   mostraRisultato(
     "📂 Parlamento caricato",
-    `${p.nome} è stato caricato con successo`
+    `${escapeHtml(p.nome)} è stato caricato con successo`
   );
 }
 //Aggiunta eventi a modali
@@ -460,12 +489,12 @@ btnGestioneMaggioranza.addEventListener("click", mostraGestioneMaggioranza);
 btnSfiducia.addEventListener("click", async () => {
   // lista partiti (meglio se opposizione)
   let html = `<h4>Chi propone la sfiducia?</h4>`;
-  partiti.forEach(p => {
+  partiti.forEach((p, i) => {
     html += `
       <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
         <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
-        <label style="flex:1;">${p.nome}</label>
-        <input type="radio" name="sfiducia" value="${p.nome}">
+        <label style="flex:1;">${escapeHtml(p.nome)}</label>
+        <input type="radio" name="sfiducia" value="${i}">
       </div>
     `;
   });
@@ -475,10 +504,11 @@ btnSfiducia.addEventListener("click", async () => {
   btnConfermaSi.onclick = () => {
     const scelta = document.querySelector('input[name="sfiducia"]:checked');
     if (!scelta) return alert("Seleziona un partito");
+    const partitoScelto = partiti[parseInt(scelta.value)];
     modalConferma.style.display = "none";
     simulaVotazione({
       tipo: "sfiducia",
-      proponente: scelta.value
+      proponente: partitoScelto.nome
     });
   };
   btnConfermaNo.onclick = () => {
@@ -500,18 +530,20 @@ function mostraGestioneMaggioranza() {
     confermaTitolo.textContent = "⚙️ Gestione Maggioranza";
 
     // PARTITI IN MAGGIORANZA
+    // I radio usano l'indice nell'array partiti come value (sicuro anche con trattini/virgolette nel nome)
     let html = `<h4>➖ Rimuovi dalla maggioranza</h4>`;
     html += `<div style="margin-bottom:10px;">`;
 
     if (coalizioneMaggioranza.length === 0) {
       html += `<p>Nessun partito in maggioranza</p>`;
     } else {
-      coalizioneMaggioranza.forEach(p => {
+      coalizioneMaggioranza.forEach(c => {
+        const idx = partiti.findIndex(p => p.nome === c.nome);
         html += `
           <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
-            <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
-            <label style="flex:1;">${p.nome}</label>
-            <input type="radio" name="azioneCoalizione" value="remove-${p.nome}">
+            <div style="width:14px;height:14px;border-radius:50%;background:${c.colore};border:1px solid #999;"></div>
+            <label style="flex:1;">${escapeHtml(c.nome)}</label>
+            <input type="radio" name="azioneCoalizione" value="remove:${idx}">
           </div>
         `;
       });
@@ -529,11 +561,12 @@ function mostraGestioneMaggioranza() {
       html += `<p>Tutti i partiti sono già nella maggioranza</p>`;
     } else {
       fuori.forEach(p => {
+        const idx = partiti.findIndex(x => x.nome === p.nome);
         html += `
           <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
             <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
-            <label style="flex:1;">${p.nome}</label>
-            <input type="radio" name="azioneCoalizione" value="add-${p.nome}">
+            <label style="flex:1;">${escapeHtml(p.nome)}</label>
+            <input type="radio" name="azioneCoalizione" value="add:${idx}">
           </div>
         `;
       });
@@ -553,14 +586,17 @@ function mostraGestioneMaggioranza() {
         return;
       }
 
-      const [azione, nomePartito] = scelta.value.split("-");
+      const [azione, idxStr] = scelta.value.split(":");
+      const partitoScelto = partiti[parseInt(idxStr)];
+      if (!partitoScelto) return;
+      const nomePartito = partitoScelto.nome;
 
       if (azione === "remove") {
         rimuoviDaMaggioranza(nomePartito);
 
         mostraRisultato(
           "➖ Partito rimosso",
-          `${nomePartito} è uscito dalla maggioranza`
+          `${escapeHtml(nomePartito)} è uscito dalla maggioranza`
         );
 
       } else if (azione === "add") {
@@ -568,7 +604,7 @@ function mostraGestioneMaggioranza() {
 
         mostraRisultato(
           "➕ Partito aggiunto",
-          `${nomePartito} è entrato nella maggioranza`
+          `${escapeHtml(nomePartito)} è entrato nella maggioranza`
         );
 
         // 👉 aggiorno fiducia anche quando entra
@@ -610,7 +646,7 @@ async function simulaVotoPresidente(){
 }
 
 function aggiornaPresidente(){ 
-  if(presidente) presidenteDiv.innerHTML=`Presidente del Parlamento: <span style="color:${presidente.colore};font-weight:bold">${presidente.nome}</span> (${presidente.partito})`; 
+  if(presidente) presidenteDiv.innerHTML=`Presidente del Parlamento: <span style="color:${presidente.colore};font-weight:bold">${escapeHtml(presidente.nome)}</span> (${escapeHtml(presidente.partito)})`; 
   else presidenteDiv.textContent='';
 }
 
@@ -623,14 +659,14 @@ function mostraCoalizione() {
     // costruisco HTML dinamico
     let html = `<div style="max-height:300px; overflow-y:auto;">`;
 
-    partiti.forEach(p => {
+    partiti.forEach((p, i) => {
       const checked = coalizioneMaggioranza.some(c => c.nome === p.nome) ? "checked" : "";
 
       html += `
         <div style="display:flex; align-items:center; gap:8px; margin:5px 0;">
           <div style="width:14px;height:14px;border-radius:50%;background:${p.colore};border:1px solid #999;"></div>
-          <label style="flex:1;">${p.nome} (${p.ideologia})</label>
-          <input type="checkbox" value="${p.nome}" ${checked}>
+          <label style="flex:1;">${escapeHtml(p.nome)} (${escapeHtml(p.ideologia)})</label>
+          <input type="checkbox" value="${i}" ${checked}>
         </div>
       `;
     });
@@ -641,13 +677,14 @@ function mostraCoalizione() {
     modalConferma.style.display = "block";
 
     const aggiornaTot = () => {
+      const dati = assegnaSeggi();
       const checkboxes = modalConferma.querySelectorAll('input[type="checkbox"]');
       let seggiTotali = 0;
 
       checkboxes.forEach(cb => {
         if (cb.checked) {
-          const p = partiti.find(x => x.nome === cb.value);
-          if (p) seggiTotali += Math.round(p.percentuale / 100 * SEGGI_TOTALI);
+          const p = dati[parseInt(cb.value)];
+          if (p) seggiTotali += p.seggi;
         }
       });
 
@@ -671,14 +708,14 @@ function mostraCoalizione() {
 
     btnConfermaSi.onclick = () => {
       const checked = [...modalConferma.querySelectorAll('input[type="checkbox"]:checked')]
-        .map(cb => cb.value);
+        .map(cb => parseInt(cb.value));
 
       if (checked.length === 0) {
         alert("Seleziona almeno un partito.");
         return;
       }
 
-      coalizioneMaggioranza = partiti.filter(p => checked.includes(p.nome));
+      coalizioneMaggioranza = partiti.filter((p, i) => checked.includes(i));
       localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
 
       modalConferma.style.display = "none";
@@ -687,6 +724,7 @@ function mostraCoalizione() {
       btnPdC.style.display = 'block';
 
       aggiornaUI();
+      disegnaParlamento(); // ridisegna l'emiciclo: i seggi della maggioranza si illuminano
       resolve(true);
     };
 
@@ -696,57 +734,6 @@ function mostraCoalizione() {
     };
 
   });
-}
-
-function coalioneCreateInputs() {
-  coalizioneForm.innerHTML = ''; // svuota prima
-  partiti.forEach((p, i) => {
-    const div = document.createElement('div');
-    div.className = 'partito-coalizione';
-
-    const colorBox = document.createElement('div');
-    colorBox.style.width = '16px';
-    colorBox.style.height = '16px';
-    colorBox.style.borderRadius = '50%';
-    colorBox.style.border = '1px solid #999';
-    colorBox.style.background = p.colore;
-
-    const label = document.createElement('label');
-    label.textContent = `${p.nome} (${p.ideologia})`;
-
-    const cb = document.createElement('input');
-    cb.type = 'checkbox';
-    cb.value = p.nome;
-    if (coalizioneMaggioranza.find(c => c.nome === p.nome)) cb.checked = true;
-    cb.addEventListener('change', aggiornaTotaleCoalizione);
-
-    div.appendChild(colorBox);
-    div.appendChild(label);
-    div.appendChild(cb);
-    coalizioneForm.appendChild(div);
-  });
-
-  aggiornaTotaleCoalizione();
-}
-
-function aggiornaTotaleCoalizione() {
-  const checkboxes = coalizioneForm.querySelectorAll('input[type="checkbox"]');
-  let seggiTotali = 0;
-  checkboxes.forEach(cb => {
-    if (cb.checked) {
-      const p = partiti.find(x => x.nome === cb.value);
-      if (p) seggiTotali += Math.round(p.percentuale / 100 * SEGGI_TOTALI);
-    }
-  });
-
-  // messaggio dinamico
-  if (seggiTotali >= SEGGI_TOTALI / 2 + 1) {
-    coalTot.style.color = '#1f7a1f';
-    coalTot.textContent = `✅ La coalizione ha la maggioranza (${seggiTotali} seggi su ${SEGGI_TOTALI})`;
-  } else {
-    coalTot.style.color = '#b30000';
-    coalTot.textContent = `⚠️ Coalizione senza maggioranza (${seggiTotali} seggi su ${SEGGI_TOTALI})`;
-  }
 }
 
 /* nomina PdC basata sulla coalizione */
@@ -789,7 +776,7 @@ function nominaPdC() {
     ministri 
 };
   localStorage.setItem('presidenteConsiglio', JSON.stringify(presidenteConsiglio));
-  pdcDiv.innerHTML = `Presidente del Consiglio: <span style="color:${pdcPartito.colore};font-weight:bold">${presidenteConsiglio.nome}</span> (${presidenteConsiglio.partito})`;
+  pdcDiv.innerHTML = `Presidente del Consiglio: <span style="color:${pdcPartito.colore};font-weight:bold">${escapeHtml(presidenteConsiglio.nome)}</span> (${escapeHtml(presidenteConsiglio.partito)})`;
   btnPdC.style.display='none';
   btnLegge.style.display="inline-block";
   aggiornaUI();
@@ -806,7 +793,7 @@ async function dimissioniPremier() {
 
   const conferma = await mostraConferma(
     "⚠️ Conferma dimissioni",
-    `Il Presidente del Consiglio <strong>${nomePdC}</strong> vuole dimettersi. <p>Accogli le dimissioni?</p>`
+    `Il Presidente del Consiglio <strong>${escapeHtml(nomePdC)}</strong> vuole dimettersi. <p>Accogli le dimissioni?</p>`
   );
   if (!conferma) return;
 
@@ -832,7 +819,7 @@ async function dimissioniPremier() {
 
   mostraRisultato(
     "❌ Dimissioni del Governo",
-    `Il Presidente del Consiglio ${nomePdC} si è dimesso. È necessario formare una nuova maggioranza.`
+    `Il Presidente del Consiglio ${escapeHtml(nomePdC)} si è dimesso. È necessario formare una nuova maggioranza.`
   );
 }
 //PARTE LEGGI
@@ -943,9 +930,9 @@ btnArchivioLeggi.onclick = () => {
         item.className = 'legge-item';
 
         item.innerHTML = `
-          <strong>${l.titolo}</strong>
+          <strong>${escapeHtml(l.titolo)}</strong>
           <small>${l.tipo === "governo" ? "Proposta del Governo" : "Proposta del Parlamento"}</small>
-          <small>${l.data}</small>
+          <small>${escapeHtml(l.data)}</small>
         `;
 
         blocco.appendChild(item);
@@ -966,6 +953,7 @@ document.querySelectorAll(".modal").forEach(modal => {
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       modal.style.display = "none";
+      if (modal.id === "modalVoto") ripulisciFranchiTiratori();
     }
   });
 });
@@ -1007,7 +995,7 @@ salvaPartiti();
 editCancel.addEventListener('click', ()=>{ editingIndex=null; editFormContainer.style.display='none'; });
 
 function aggiornaPdC(){ 
-  if(presidenteConsiglio) pdcDiv.innerHTML=`Presidente del Consiglio: <span style="color:${presidenteConsiglio.colore}; font-weight:bold">${presidenteConsiglio.nome}</span> (${presidenteConsiglio.partito})`; 
+  if(presidenteConsiglio) pdcDiv.innerHTML=`Presidente del Consiglio: <span style="color:${presidenteConsiglio.colore}; font-weight:bold">${escapeHtml(presidenteConsiglio.nome)}</span> (${escapeHtml(presidenteConsiglio.partito)})`; 
   else pdcDiv.textContent='';
 }
 
@@ -1039,7 +1027,6 @@ function aggiornaPdC(){
       presidenteConsiglio = null;
     }
   }
-  //salvaPartiti();
 })();
 
 //MODAL VOTAZIONI
@@ -1063,6 +1050,7 @@ function mostraRisultato(titolo, testo) {
 
 chiudiModal.onclick = () => {
   modal.style.display = "none";
+  ripulisciFranchiTiratori();
 };
 
 function mostraConferma(titolo, testo) {
@@ -1084,6 +1072,266 @@ function mostraConferma(titolo, testo) {
 }
 
 
+// =========================================================
+// MOTORE DI VOTO (disciplina di partito, franchi tiratori, crisi di alleanza)
+// =========================================================
+// Come funziona:
+// 1. Ogni PARTITO decide una linea ufficiale (si / no / astenuto) in base a ruolo
+//    (maggioranza/opposizione), vicinanza ideologica e tipo di votazione.
+// 2. Ogni partito ha una COESIONE per quella votazione: parte da una base, cala se il
+//    partito è grande (più correnti interne), e subisce un "malumore" casuale a coda
+//    lunga (di solito minimo, ogni tanto forte) più un "clima politico" comune a tutti.
+// 3. Ogni DEPUTATO ha una propensione alla ribellione stabile (dipende dal suo nome):
+//    i franchi tiratori sono quasi sempre gli stessi, non estratti a caso ogni volta.
+// 4. I dissidenti non passano al fronte opposto: più spesso si astengono.
+// 5. Nei voti di fiducia/sfiducia/leggi di governo un partito alleato può ritirare
+//    il sostegno in blocco (crisi di alleanza).
+// Tutti i parametri sono modificabili qui sotto.
+
+const CONFIG_VOTO = {
+  coesioneBase: {
+    fiducia: 0.995,         // voto palese per appello nominale: dissentire = far cadere il governo
+    sfiducia: 0.99,
+    leggeGoverno: 0.975,
+    leggeParlamento: 0.94,  // più libertà di coscienza
+    proponente: 0.99        // il partito che propone la legge è compatto
+  },
+  // quanto "malumore" e effetto dimensione pesano in ciascun tipo di voto
+  fattoreMalumore: {
+    fiducia: 0.35,
+    sfiducia: 0.45,
+    leggeGoverno: 0.8,
+    leggeParlamento: 1.3
+  },
+  penalitaDimensione: 0.06, // un partito che ha il 100% dei seggi perde 6 punti di coesione
+  malumoreMedio: 0.02,      // malumore medio per partito (distribuzione esponenziale)
+  malumoreMax: 0.30,
+  climaMax: 0.015,          // oscillazione comune a tutti i partiti in ogni votazione
+  probCrisiAlleanza: {      // probabilità che un partito alleato si astenga in blocco
+    fiducia: 0.03,
+    sfiducia: 0.03,
+    leggeGoverno: 0.02,
+    leggeParlamento: 0
+  }
+};
+
+const ORDINE_IDEOLOGIA = { sinistra: 0, centro: 1, destra: 2 };
+
+// probabilità di voto del partito in base alla distanza ideologica (0, 1, 2)
+const VICINANZA = {
+  0: { si: 0.50, astenuto: 0.30, no: 0.20 },
+  1: { si: 0.15, astenuto: 0.35, no: 0.50 },
+  2: { si: 0.04, astenuto: 0.16, no: 0.80 }
+};
+const OPPOSIZIONE_LEGGE_GOVERNO = {
+  0: { si: 0.30, astenuto: 0.35, no: 0.35 },
+  1: { si: 0.12, astenuto: 0.33, no: 0.55 },
+  2: { si: 0.04, astenuto: 0.16, no: 0.80 }
+};
+const OPPOSIZIONE_SFIDUCIA = {
+  0: { si: 0.90, astenuto: 0.10 },
+  1: { si: 0.70, astenuto: 0.20, no: 0.10 },
+  2: { si: 0.50, astenuto: 0.25, no: 0.25 }
+};
+// dove va il voto di chi dissente dalla linea del partito
+const DIREZIONE_DISSENSO = {
+  si:       { astenuto: 0.60, no: 0.40 },
+  no:       { astenuto: 0.65, si: 0.35 },
+  astenuto: { si: 0.50, no: 0.50 }
+};
+
+function distanzaIdeologica(a, b) {
+  const x = ORDINE_IDEOLOGIA[a] ?? 1;
+  const y = ORDINE_IDEOLOGIA[b] ?? 1;
+  return Math.abs(x - y);
+}
+
+// sceglie una chiave con probabilità proporzionale ai pesi, es. {si:.5, no:.5}
+function sceltaPesata(pesi) {
+  const voci = Object.entries(pesi);
+  const tot = voci.reduce((s, [, w]) => s + w, 0);
+  let r = Math.random() * tot;
+  for (const [k, w] of voci) {
+    if (r < w) return k;
+    r -= w;
+  }
+  return voci[voci.length - 1][0];
+}
+
+// hash stabile 0..1 a partire da una stringa (FNV-1a)
+function hashNome(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return ((h >>> 0) % 10000) / 10000;
+}
+
+// 0..1, con la maggior parte dei deputati disciplinati e pochi ribelli cronici
+function propensioneRibelle(nome) {
+  const u = hashNome(nome);
+  return u * u;
+}
+
+function chiaveVotazione(tipo, tipoLegge) {
+  if (tipo === "legge") return tipoLegge === "governo" ? "leggeGoverno" : "leggeParlamento";
+  return tipo; // "fiducia" | "sfiducia"
+}
+
+// linea ufficiale del partito per questa votazione
+function decidiPosizione(p, { tipo, tipoLegge, inMagg, pdcObj, proponenteObj, proponenteInMagg }) {
+  const dist = (altro) => altro ? distanzaIdeologica(p.ideologia, altro.ideologia) : 1;
+
+  if (tipo === "fiducia") {
+    if (inMagg) return "si";
+    return dist(pdcObj) === 2 ? "no" : sceltaPesata({ no: 0.85, astenuto: 0.15 });
+  }
+
+  if (tipo === "sfiducia") {
+    if (proponenteObj && p.nome === proponenteObj.nome) return "si";
+    if (inMagg) return sceltaPesata({ no: 0.90, astenuto: 0.10 });
+    return sceltaPesata(OPPOSIZIONE_SFIDUCIA[dist(proponenteObj)]);
+  }
+
+  if (tipo === "legge" && tipoLegge === "governo") {
+    if (inMagg) return "si";
+    return sceltaPesata(OPPOSIZIONE_LEGGE_GOVERNO[dist(pdcObj)]);
+  }
+
+  if (tipo === "legge" && tipoLegge === "parlamento") {
+    if (!proponenteObj) return "astenuto";
+    if (p.nome === proponenteObj.nome) return "si";
+
+    if (proponenteInMagg) {
+      // proposta della maggioranza
+      if (inMagg) return sceltaPesata({ si: 0.92, astenuto: 0.08 });
+      return sceltaPesata(VICINANZA[dist(proponenteObj)]);
+    }
+
+    // proposta dell'opposizione
+    if (inMagg) {
+      // la maggioranza di norma boccia, ma un alleato ideologicamente vicino può appoggiarla
+      return dist(proponenteObj) === 0
+        ? sceltaPesata({ si: 0.20, astenuto: 0.30, no: 0.50 })
+        : sceltaPesata({ si: 0.05, astenuto: 0.25, no: 0.70 });
+    }
+    return sceltaPesata(VICINANZA[dist(proponenteObj)]);
+  }
+
+  return "astenuto";
+}
+
+// prepara linea e coesione di ogni partito per UNA votazione
+function preparaVotazione({ tipo, tipoLegge, proponente }) {
+  const dati = assegnaSeggi();
+  const chiave = chiaveVotazione(tipo, tipoLegge);
+  const pdcObj = presidenteConsiglio ? partiti.find(p => p.nome === presidenteConsiglio.partito) : null;
+  const proponenteObj = proponente ? partiti.find(p => p.nome === proponente) : null;
+  const proponenteInMagg = !!proponenteObj && coalizioneMaggioranza.some(c => c.nome === proponenteObj.nome);
+  const clima = (Math.random() * 2 - 1) * CONFIG_VOTO.climaMax;
+  const lineaGoverno = (tipo === "sfiducia") ? "no" : "si";
+
+  const mappa = {};
+  const eventi = [];
+
+  dati.forEach(p => {
+    const inMagg = coalizioneMaggioranza.some(c => c.nome === p.nome);
+    const èLeaderGoverno = !!pdcObj && p.nome === pdcObj.nome;
+    const èProponente = !!proponenteObj && p.nome === proponenteObj.nome;
+
+    let posizione = decidiPosizione(p, { tipo, tipoLegge, inMagg, pdcObj, proponenteObj, proponenteInMagg });
+
+    // crisi di alleanza: un partner di governo si astiene in blocco
+    let crisi = false;
+    const probCrisi = CONFIG_VOTO.probCrisiAlleanza[chiave] || 0;
+    if (inMagg && !èLeaderGoverno && !èProponente && posizione === lineaGoverno && Math.random() < probCrisi) {
+      posizione = "astenuto";
+      crisi = true;
+      eventi.push(
+        tipo === "legge"
+          ? `⚠️ ${p.nome} si astiene in blocco su questa legge`
+          : `⚠️ ${p.nome} ha ritirato il sostegno al governo (astensione di gruppo)`
+      );
+    }
+
+    // coesione del partito in questa votazione
+    let coesione = èProponente ? CONFIG_VOTO.coesioneBase.proponente : CONFIG_VOTO.coesioneBase[chiave];
+    if (!èProponente) {
+      const f = CONFIG_VOTO.fattoreMalumore[chiave];
+      const malumore = Math.min(
+        CONFIG_VOTO.malumoreMax,
+        -Math.log(1 - Math.random()) * CONFIG_VOTO.malumoreMedio * f
+      );
+      coesione = coesione
+        - malumore
+        - (p.seggi / SEGGI_TOTALI) * CONFIG_VOTO.penalitaDimensione * f
+        + clima * f;
+    }
+    if (crisi) coesione = 0.98; // la decisione è del gruppo: i membri la seguono
+    coesione = Math.max(0.5, Math.min(1, coesione));
+
+    mappa[p.nome] = { posizione, coesione };
+  });
+
+  return { mappa, eventi };
+}
+
+// voto del singolo deputato: segue la linea del partito, salvo dissenso
+function votoDeputato(nome, ctxPartito) {
+  const prob = (1 - ctxPartito.coesione) * (0.2 + 2.4 * propensioneRibelle(nome));
+  if (Math.random() < Math.min(0.9, prob)) {
+    return { voto: sceltaPesata(DIREZIONE_DISSENSO[ctxPartito.posizione]), dissente: true };
+  }
+  return { voto: ctxPartito.posizione, dissente: false };
+}
+
+
+// Evidenzia un seggio di franco tiratore: cerchio più grande con bordo scuro + tooltip
+function segnaFranco(cerchio) {
+  cerchio.setAttribute('r', 6.5);
+  cerchio.setAttribute('stroke', '#111');
+  cerchio.setAttribute('stroke-width', 1);
+  const t = cerchio.querySelector('title');
+  if (t && !t.textContent.includes('franco tiratore')) t.textContent += ' (franco tiratore)';
+}
+
+// Riporta i franchi tiratori a seggi normali (chiamata alla chiusura del popup del risultato)
+function ripulisciFranchiTiratori() {
+  parlamento.querySelectorAll('circle[data-partito][stroke]').forEach(c => {
+    c.setAttribute('r', 5);
+    c.removeAttribute('stroke');
+    c.removeAttribute('stroke-width');
+
+    const t = c.querySelector('title');
+    if (t) t.textContent = t.textContent.replace(' (franco tiratore)', '');
+  });
+}
+
+// Dopo un ridisegno dell'emiciclo rimette in evidenza i franchi tiratori dell'ultima votazione
+function evidenziaFranchiTiratori(chiavi) {
+  const set = new Set(chiavi);
+  parlamento.querySelectorAll('circle[data-partito]').forEach(c => {
+    if (set.has(c.getAttribute('data-partito') + '|' + c.getAttribute('data-seggio'))) segnaFranco(c);
+  });
+}
+
+// Riepilogo di franchi tiratori ed eventi (crisi di alleanza) da aggiungere ai risultati
+function riepilogoExtra(eventi, dissidenti) {
+  let html = "";
+  const nomi = Object.keys(dissidenti).filter(n => dissidenti[n] > 0);
+  if (nomi.length) {
+    const tot = nomi.reduce((s, n) => s + dissidenti[n], 0);
+    html += `<p>🕵️ <strong>Franchi tiratori: ${tot}</strong><br>` +
+      nomi.sort((x, y) => dissidenti[y] - dissidenti[x])
+          .map(n => `${escapeHtml(n)}: ${dissidenti[n]}`).join("<br>") + `</p>`;
+  } else {
+    html += `<p>🕵️ Nessun franco tiratore: tutti i gruppi hanno votato compatti.</p>`;
+  }
+  if (eventi.length) html += `<p>${eventi.map(escapeHtml).join("<br>")}</p>`;
+  return html;
+}
+
 async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = null, tipoLegge = null}) {
 
   const dati = assegnaSeggi();
@@ -1104,98 +1352,25 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
   });
 
   // ANIMAZIONE VOTO
+  // Linea di ogni partito + coesione calcolate UNA volta per votazione
+  const { mappa, eventi } = preparaVotazione({ tipo, tipoLegge, proponente });
+  const dissidenti = {}; // franchi tiratori per partito
+  const chiaviDissidenti = []; // seggi dei franchi tiratori (partito|numero seggio)
+
   for (let i = 0; i < cerchi.length; i++) {
 
     const cerchio = cerchi[i];
-    const partito = dati.find(p => p.nome === cerchio.getAttribute('data-partito'));
-    if (!partito) continue;
+    const nomePartito = cerchio.getAttribute('data-partito');
+    const ctx = mappa[nomePartito];
+    if (!ctx) continue;
 
-    let voto;
-    const inMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
-    const rand = Math.random();
-
-    // LOGICA DIVERSA PER TIPO
-    if (tipo === "fiducia") {
-
-      if (inMaggioranza) {
-        voto = rand < 0.9 ? "si" : "no";
-      } else {
-        if (rand < 0.85) voto = "no";
-        else if (rand < 0.95) voto = "astenuto";
-        else voto = "si";
-      }
-
-    } else if (tipo === "legge") {
-
-      const èMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
-      const èProponente = partito.nome === proponente;
-      const proponenteInMaggioranza = coalizioneMaggioranza.some(c => c.nome === proponente);
-      const partitoProponenteObj = partiti.find(p => p.nome === proponente);
-
-      if (tipoLegge === "governo") {
-        // simile alla fiducia
-        if (èMaggioranza) voto = Math.random() < 0.95 ? "si" : "astenuto";
-        else voto = Math.random() < 0.8 ? "no" : "astenuto";
-      }
-    
-      else if (tipoLegge === "parlamento") {
-      
-        if (èProponente) {
-          voto = "si"; // il partito proponente vota sempre sì
-        }
-      
-        else if (proponenteInMaggioranza) {
-          // proposta della maggioranza
-          if (èMaggioranza) voto = Math.random() < 0.9 ? "si" : "astenuto";
-          else voto = Math.random() < 0.7 ? "no" : "astenuto";
-        }
-      
-        else {
-          // 🔴 proposta opposizione → quasi sempre bocciata
-          if (èMaggioranza) {
-            voto = Math.random() < 0.85 ? "no" : "astenuto";
-          } else {
-            // opposizione
-            if (!partitoProponenteObj) {
-              voto = "astenuto";
-            } 
-            else if (partito.ideologia === partitoProponenteObj.ideologia) {
-              // stessa ideologia → tende a votare sì
-              voto = Math.random() < 0.7 ? "si" : "astenuto";
-            } 
-            else {
-              // ideologia diversa → vota contro
-              voto = Math.random() < 0.75 ? "no" : "astenuto";
-            }
-          }
-        }
-      }
+    const { voto, dissente } = votoDeputato(cerchio.nomeDeputato || `seggio-${i}`, ctx);
+    if (dissente) {
+      dissidenti[nomePartito] = (dissidenti[nomePartito] || 0) + 1;
+      chiaviDissidenti.push(nomePartito + '|' + cerchio.getAttribute('data-seggio'));
+      segnaFranco(cerchio);
     }
-    else if (tipo === "sfiducia") {
-      const èMaggioranza = coalizioneMaggioranza.some(c => c.nome === partito.nome);
-      const èProponente = partito.nome === proponente;
-      const proponenteObj = partiti.find(p => p.nome === proponente);
 
-      if (èProponente) {
-        voto = "si"; // chi propone vota sempre sì
-      }
-
-      else if (!èMaggioranza) {
-       // opposizione → tende a votare sì
-       if (partito.ideologia === proponenteObj.ideologia) {
-          voto = Math.random() < 0.85 ? "si" : "astenuto";
-        } else {
-          voto = Math.random() < 0.7 ? "si" : "no";
-       }
-      }
-
-
-      else {
-        // maggioranza → difende governo
-        voto = Math.random() < 0.85 ? "no" : "astenuto";
-      }
-    }  
-  
     // conteggio
     if (voto === "si") favorevoli++;
     else if (voto === "no") contrari++;
@@ -1210,6 +1385,8 @@ async function simulaVotazione({ tipo, titolo = "", salva = false, proponente = 
 
     await new Promise(r => setTimeout(r, 2));
   }
+
+  const extraHtml = riepilogoExtra(eventi, dissidenti);
 
   const soglia = Math.floor(SEGGI_TOTALI / 2) + 1;
   const approvato = favorevoli >= soglia;
@@ -1249,7 +1426,7 @@ Astenuti: ${astenuti} (${percentAst}%)
 📈 Scarto: +${scarto} voti
 </p>
 
-Il governo dell'<strong>${nomePdC}</strong> è caduto.`
+Il governo dell'<strong>${escapeHtml(nomePdC || "")}</strong> è caduto.${extraHtml}`
     );
 
     btnCoalizione.style.display = "block";
@@ -1274,11 +1451,12 @@ Astenuti: <strong>${astenuti}</strong> (${percentAst}%)
 <p>
 🎯 Maggioranza richiesta: <strong>${soglia} voti</strong><br>
 📉 Scarto: <strong>${scartoNo}</strong> voti per approvare
-</p>`
+</p>${extraHtml}`
     );
   }
 
   disegnaParlamento();
+  evidenziaFranchiTiratori(chiaviDissidenti);
   return; 
 }
 
@@ -1311,7 +1489,7 @@ if (tipo === "fiducia") {
 
 else if (tipo === "legge") {
   titoloRisultato = approvato ? "📜 Legge approvata" : "❌ Legge respinta";
-  intestazione = titolo || "Disegno di legge";
+  intestazione = escapeHtml(titolo || "Disegno di legge");
 }
 
 // OUTPUT
@@ -1331,7 +1509,7 @@ Astenuti: <strong>${astenuti}</strong> (${percentAst}%)
 ${approvato 
   ? `📈 Scarto: <strong>+${scarto}</strong> voti` 
   : `📉 Mancano: <strong>${scarto}</strong> voti`}
-</p>`
+</p>${extraHtml}`
 );
 
   // AZIONI POST
@@ -1358,6 +1536,7 @@ ${approvato
   }
 
   disegnaParlamento();
+  evidenziaFranchiTiratori(chiaviDissidenti);
 }
 function rimuoviDaMaggioranza(nomePartito) {
 
@@ -1367,7 +1546,7 @@ function rimuoviDaMaggioranza(nomePartito) {
   localStorage.setItem('coalizioneMaggioranza', JSON.stringify(coalizioneMaggioranza));
 
   // 2. rimuovi i ministri di quel partito
-  if (presidenteConsiglio && presidenteConsiglio.ministri) {
+  if (presidenteConsiglio && presidenteConsiglio.ministri && coalizioneMaggioranza.length > 0) {
 
     presidenteConsiglio.ministri = presidenteConsiglio.ministri.map(m => {
 
@@ -1416,4 +1595,3 @@ function aggiungiAMaggioranza(nomePartito) {
   aggiornaUI();
   disegnaParlamento();
 }
-

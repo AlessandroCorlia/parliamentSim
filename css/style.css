@@ -1,4 +1,4 @@
- body {
+body {
     font-family: 'Segoe UI', Roboto, Arial, sans-serif;
     background: radial-gradient(circle at center,#f1f2f6,#dfe3e8);
     margin:0;
@@ -889,4 +889,50 @@ body.landing-active > div:not(#landingScreen) {
     width: 100%;
   }
 
+}
+
+
+/* ---------------------------------------------------------
+   Pulsante "Home" (in alto a sinistra nell'area del Parlamento)
+   --------------------------------------------------------- */
+
+#btnHome {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 5;
+  padding: 7px 14px;
+  background: rgba(255, 255, 255, 0.75);
+  color: #2e4a7d;
+  border: 1.5px solid #d1a654;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+#btnHome:hover {
+  background: #2e4a7d;
+  color: #fff;
+  transform: none;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.18);
+}
+
+/* il titolo non deve mai finire sotto il pulsante */
+#titoloParlamento {
+  padding: 0 110px;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  #btnHome {
+    top: 10px;
+    left: 10px;
+    padding: 5px 12px;
+  }
+  #titoloParlamento {
+    padding: 0 96px;
+  }
 }

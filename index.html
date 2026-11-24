@@ -5,14 +5,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <link rel="shortcut icon" href="logo.png" type="image/x-icon">
 <link rel="stylesheet" href="css/style.css">
-<title>Create your own Parliament</title>
+<title>My Parliament</title>
 </head>
 <body class="landing-active">
   <!-- SCHERMATA INIZIALE -->
 <div id="landingScreen">
   <div class="landing-content">
 
-    <h1>Create your own Parliament</h1>
+    <h1>My Parliament</h1>
     <p class="landing-subtitle">
       Come vuoi creare il tuo Parlamento?
     </p>
@@ -29,7 +29,7 @@
           il risultato delle elezioni politiche.
         </p>
 
-        <button id="btnSimulaElezioni">
+        <button id="btnSimulaElezioni" title="Simula le elezioni">
           Simula le elezioni
         </button>
       </div>
@@ -44,7 +44,7 @@
           la percentuale dei seggi.
         </p>
 
-        <button id="btnCostruisciParlamento">
+        <button id="btnCostruisciParlamento" title="Costruisci il Parlamento">
           Costruisci il Parlamento
         </button>
       </div>
@@ -74,7 +74,7 @@
   <div id="percentuale-riempimento">Riempimento parlamento: 0%</div>
 </div>
 <div id="main">
-  <button id="btnHome" title="Torna alla schermata iniziale" aria-label="Torna alla schermata iniziale">🏠 Home</button>
+  <button id="btnPausa" title="Pausa (Esc)" aria-label="Apri il menu di pausa">⏸️ Pausa</button>
   <h2 id="titoloParlamento">Il Tuo Parlamento</h2>
   <!-- Finestra Leggi Approvate -->
   <div id="archivioLeggi" class="modal">
@@ -101,6 +101,17 @@
     <button id="chiudiParlamenti">Chiudi</button>
   </div>
 </div>
+  <div id="modalPausa" class="modal">
+    <div class="modal-content pausa-box">
+      <h3>⏸️ Pausa</h3>
+      <div id="pausaRiepilogo" class="pausa-riepilogo"></div>
+      <div class="pausa-btns">
+        <button id="btnRiprendi">▶️ Riprendi</button>
+        <button id="btnHome">🏠 Torna alla schermata iniziale</button>
+        <button id="btnNuovaPartita">🗑️ Nuova partita</button>
+      </div>
+    </div>
+  </div>
   <div id="modalConferma" class="modal">
   <div class="modal-content">
     <h3 id="confermaTitolo"></h3>

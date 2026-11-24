@@ -896,7 +896,7 @@ body.landing-active > div:not(#landingScreen) {
    Pulsante "Home" (in alto a sinistra nell'area del Parlamento)
    --------------------------------------------------------- */
 
-#btnHome {
+#btnPausa {
   position: absolute;
   top: 18px;
   left: 18px;
@@ -913,7 +913,7 @@ body.landing-active > div:not(#landingScreen) {
   transition: 0.2s;
 }
 
-#btnHome:hover {
+#btnPausa:hover {
   background: #2e4a7d;
   color: #fff;
   transform: none;
@@ -922,17 +922,90 @@ body.landing-active > div:not(#landingScreen) {
 
 /* il titolo non deve mai finire sotto il pulsante */
 #titoloParlamento {
-  padding: 0 110px;
+  padding: 0 96px;
   box-sizing: border-box;
 }
 
 @media (max-width: 768px) {
-  #btnHome {
+  #btnPausa {
     top: 10px;
     left: 10px;
     padding: 5px 12px;
   }
   #titoloParlamento {
-    padding: 0 96px;
+    padding: 0 84px;
+    font-size: 22px;
   }
+}
+
+
+/* ---------------------------------------------------------
+   Finestra di pausa
+   --------------------------------------------------------- */
+
+.pausa-box {
+  width: 320px;
+  border: 3px solid #2e4a7d;
+}
+
+.pausa-box h3 {
+  color: #2e4a7d;
+  margin-bottom: 12px;
+}
+
+.pausa-riepilogo {
+  background: #f4f6f8;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  text-align: left;
+}
+
+.pausa-riga {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 3px 0;
+}
+
+.pausa-riga span {
+  color: #555;
+}
+
+.pausa-riga strong {
+  color: #2e4a7d;
+  text-align: right;
+}
+
+.pausa-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.pausa-btns button {
+  width: 100%;
+  margin-top: 0;
+  padding: 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+#btnRiprendi {
+  background: linear-gradient(90deg, #2e4a7d, #1f345a);
+  border: 2px solid #d1a654;
+}
+
+#btnHome {
+  background: #e9eaee;
+  color: #2e4a7d;
+}
+
+#btnHome:hover {
+  background: #dfe3e8;
+}
+
+#btnNuovaPartita {
+  background: linear-gradient(90deg, #911, #c22);
 }

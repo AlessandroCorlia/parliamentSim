@@ -42,6 +42,12 @@ const landingScreen = document.getElementById('landingScreen');
 const btnSimulaElezioni = document.getElementById('btnSimulaElezioni');
 const btnCostruisciParlamento = document.getElementById('btnCostruisciParlamento');
 const btnHome = document.getElementById('btnHome');
+//PAUSA
+const btnPausa = document.getElementById('btnPausa');
+const modalPausa = document.getElementById('modalPausa');
+const pausaRiepilogo = document.getElementById('pausaRiepilogo');
+const btnRiprendi = document.getElementById('btnRiprendi');
+const btnNuovaPartita = document.getElementById('btnNuovaPartita');
 
 // =========================================================
 // UTILITY
@@ -79,7 +85,7 @@ btnCostruisciParlamento.addEventListener('click', () => {
 // MODALITÀ SIMULAZIONE ELETTORALE
 
 btnSimulaElezioni.addEventListener('click', () => {
-  alert("La simulazione elettorale sarà disponibile prossimamente.");
+  alert("I nostri dev sottopagati stanno lavorando giorno e notte per farla funzionare 😁");
 });
 // Ripristina la schermata visualizzata prima del refresh
 if (localStorage.getItem('schermataAttiva') === 'parlamento') {
@@ -89,12 +95,91 @@ if (localStorage.getItem('schermataAttiva') === 'parlamento') {
 //TORNA ALLA HOME
 
 btnHome.addEventListener('click', () => {
+  modalPausa.style.display = 'none';
   document.body.classList.add('landing-active');
   localStorage.setItem('schermataAttiva','iniziale');
 
   if (landingScreen) {
     landingScreen.style.display = 'flex';
   }
+});
+
+// =========================================================
+// PAUSA
+// =========================================================
+
+function rigaPausa(etichetta, valore) {
+  const riga = document.createElement('div');
+  riga.className = 'pausa-riga';
+  const e = document.createElement('span');
+  e.textContent = etichetta;
+  const v = document.createElement('strong');
+  v.textContent = valore;
+  riga.appendChild(e);
+  riga.appendChild(v);
+  return riga;
+}
+
+function apriPausa() {
+  const dati = assegnaSeggi();
+  const totPerc = partiti.reduce((s, p) => s + p.percentuale, 0);
+  const seggiMagg = dati
+    .filter(p => coalizioneMaggioranza.some(c => c.nome === p.nome))
+    .reduce((s, p) => s + p.seggi, 0);
+  const leggi = (JSON.parse(localStorage.getItem('archivioLeggi')) || [])
+    .filter(l => (l.legislatura || 1) === legislatura);
+
+  pausaRiepilogo.innerHTML = '';
+  pausaRiepilogo.appendChild(rigaPausa('Legislatura', toRoman(legislatura)));
+  pausaRiepilogo.appendChild(rigaPausa('Partiti', `${partiti.length} (${totPerc}% dei seggi)`));
+  pausaRiepilogo.appendChild(rigaPausa('Maggioranza', coalizioneMaggioranza.length ? `${seggiMagg} seggi` : 'Nessuna'));
+  pausaRiepilogo.appendChild(rigaPausa('Governo', presidenteConsiglio ? `${presidenteConsiglio.nome} (${presidenteConsiglio.partito})` : 'Nessuno'));
+  pausaRiepilogo.appendChild(rigaPausa('Leggi approvate', String(leggi.length)));
+
+  modalPausa.style.display = 'block';
+}
+
+function chiudiPausa() {
+  modalPausa.style.display = 'none';
+}
+
+btnPausa.addEventListener('click', apriPausa);
+btnRiprendi.addEventListener('click', chiudiPausa);
+
+btnNuovaPartita.addEventListener('click', async () => {
+  const conferma = await mostraConferma(
+    "⚠️ Nuova partita",
+    "Verranno cancellati partiti, governo, leggi approvate e legislature. Vuoi continuare?"
+  );
+  if (!conferma) return;
+
+  partiti = [];
+  presidente = null;
+  presidenteConsiglio = null;
+  coalizioneMaggioranza = [];
+  legislatura = 1;
+  localStorage.setItem('legislatura', legislatura);
+  localStorage.removeItem('archivioLeggi');
+
+  chiudiPausa();
+  updateTitle();
+  salvaPartiti();
+});
+
+// Esc apre/chiude la pausa (se non c'è già un'altra finestra aperta)
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (document.body.classList.contains('landing-active')) return;
+
+  if (modalPausa.style.display === 'block') {
+    chiudiPausa();
+    return;
+  }
+
+  const altraFinestra = [...document.querySelectorAll('.modal')].some(m => m.style.display === 'block')
+    || editFormContainer.style.display === 'flex'
+    || leggeContainer.style.display === 'flex';
+  if (!altraFinestra) apriPausa();
 });
 
 const btnLegge = document.getElementById("btnLegge");

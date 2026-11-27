@@ -69,6 +69,7 @@ function escapeHtml(str) {
 
 function entraNelParlamento() {
   document.body.classList.remove('landing-active');
+  document.body.classList.remove('elezioni-active');
   localStorage.setItem('schermataAttiva', 'parlamento');
 
   if (landingScreen) {
@@ -85,7 +86,7 @@ btnCostruisciParlamento.addEventListener('click', () => {
 // MODALITÀ SIMULAZIONE ELETTORALE
 
 btnSimulaElezioni.addEventListener('click', () => {
-  alert("I nostri dev sottopagati stanno lavorando giorno e notte per farla funzionare 😁");
+  apriSimulazioneElezioni(); // definita in js/elezioni.js
 });
 // Ripristina la schermata visualizzata prima del refresh
 if (localStorage.getItem('schermataAttiva') === 'parlamento') {
@@ -170,6 +171,7 @@ btnNuovaPartita.addEventListener('click', async () => {
 document.addEventListener('keydown', (e) => {
   if (e.key !== 'Escape') return;
   if (document.body.classList.contains('landing-active')) return;
+  if (document.body.classList.contains('elezioni-active')) return;
 
   if (modalPausa.style.display === 'block') {
     chiudiPausa();
@@ -1377,17 +1379,18 @@ function segnaFranco(cerchio) {
   cerchio.setAttribute('r', 6.5);
   cerchio.setAttribute('stroke', '#111');
   cerchio.setAttribute('stroke-width', 1);
+  cerchio.classList.add('franco-tiratore'); // marcatore: così la pulizia non tocca premier, ministri e presidente
   const t = cerchio.querySelector('title');
   if (t && !t.textContent.includes('franco tiratore')) t.textContent += ' (franco tiratore)';
 }
 
 // Riporta i franchi tiratori a seggi normali (chiamata alla chiusura del popup del risultato)
 function ripulisciFranchiTiratori() {
-  parlamento.querySelectorAll('circle[data-partito][stroke]').forEach(c => {
+  parlamento.querySelectorAll('circle.franco-tiratore').forEach(c => {
+    c.classList.remove('franco-tiratore');
     c.setAttribute('r', 5);
     c.removeAttribute('stroke');
     c.removeAttribute('stroke-width');
-
     const t = c.querySelector('title');
     if (t) t.textContent = t.textContent.replace(' (franco tiratore)', '');
   });

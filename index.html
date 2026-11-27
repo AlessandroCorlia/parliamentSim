@@ -29,7 +29,7 @@
           il risultato delle elezioni politiche.
         </p>
 
-        <button id="btnSimulaElezioni" title="Simula le elezioni">
+        <button id="btnSimulaElezioni">
           Simula le elezioni
         </button>
       </div>
@@ -44,7 +44,7 @@
           la percentuale dei seggi.
         </p>
 
-        <button id="btnCostruisciParlamento" title="Costruisci il Parlamento">
+        <button id="btnCostruisciParlamento">
           Costruisci il Parlamento
         </button>
       </div>
@@ -54,6 +54,24 @@
   </div>
 </div>
   
+<!-- SIMULAZIONE ELETTORALE -->
+<div id="elezioniScreen">
+  <div class="el-wrap">
+    <div class="el-top">
+      <button id="elHome" type="button" class="el-ghost">🏠 Schermata iniziale</button>
+      <h1>🗳️ Simulazione elettorale</h1>
+      <button id="elReset" type="button" class="el-ghost">↺ Ricomincia</button>
+    </div>
+    <div id="elStepper" class="el-stepper"></div>
+    <div id="elPanel" class="el-panel"></div>
+    <div class="el-nav">
+      <button id="elIndietro" type="button" class="el-ghost">← Indietro</button>
+      <div id="elErr" class="el-errore" role="alert"></div>
+      <button id="elAvanti" type="button">Avanti →</button>
+    </div>
+  </div>
+</div>
+
 <!--Colonna Gestione Partiti-->
 <div id="menu">
   <h1>Gestione Partiti</h1>
@@ -224,5 +242,6 @@
   </div>
 </div>
 <script src="js/script.js"></script>
+<script src="js/elections.js"></script>
 </body>
 </html>
